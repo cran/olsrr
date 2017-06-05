@@ -23,7 +23,8 @@ mt$cyl <- as.factor(mt$cyl)
 ols_bartlett_test(mpg ~ cyl, data = mt)
 
 ## ----bartlett4-----------------------------------------------------------
-model <- lm(mpg ~ cyl, data = mt)
+mtcars$cyl <- as.factor(mtcars$cyl)
+model <- lm(mpg ~ cyl, data = mtcars)
 ols_bartlett_test(model)
 
 ## ----bp1-----------------------------------------------------------------

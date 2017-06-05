@@ -9,8 +9,15 @@ ols_cooksd_barplot(model)
 \arguments{
 \item{model}{an object of class \code{lm}}
 }
+\value{
+\code{ols_cooksd_barplot} returns  a list containing the
+following components:
+
+\item{outliers}{a tibble with observation number and \code{cooks distance} that exceed \code{threshold}}
+\item{threshold}{\code{threshold} for classifying an observation as an outlier}
+}
 \description{
-Bar Plot of Cook's distance to detect observations that strongly influence fitted values of the model.
+Bar Plot of cook's distance to detect observations that strongly influence fitted values of the model.
 }
 \details{
 Cook's distance was introduced by American statistician R Dennis Cook in 1977. It is used 

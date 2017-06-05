@@ -23,14 +23,6 @@ test_that('output from combinations matches the expected result', {
   expect_equal(combinations(4, 2), 6)
 })
 
-test_that('output from advarx matches the expected output', {
-    expect_equivalent(advarx(mtcars, 2) ,residuals(lm(mpg ~ ., data = mtcars)))
-})
-
-test_that('output from advary matches the expected output', {
-    expect_equivalent(advary(mtcars, 2) ,residuals(lm(mpg ~ ., data = mtcars[, c(-2)])))
-})
-
 test_that('output from cpout matches the expected result', {
     model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
     k <- cpout(model)
@@ -61,7 +53,7 @@ test_that('output from cpdata matches the expected result', {
 test_that('output from cdplot matches the expected output', {
     model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
     k <- cdplot(model)
-    expect_equal(round(k$maxx, 3), 0.494)
+    expect_equal(round(k$maxx, 3), 0.398)
     expect_equal(k$ts, 0.125)
 })
 

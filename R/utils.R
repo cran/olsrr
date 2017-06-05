@@ -78,20 +78,18 @@ combinations <- function(n, r) {
 }
 
 # added variable Plot
-advarx <- function(data , i) {
-    j <- i - 1
-    k <- names(data)
-  fla <- as.formula(paste0('`', k[j], '`', " ~ ."))
-  out <- residuals(lm(fla, data = data))
-  return(out)
+advarx <- function(data , i, xnames) {
+    k <- xnames[i]
+    ols <- ols_regress(paste(k, '~', paste(xnames[-i], collapse = ' + ')), data)
+    out <- ols$model$residuals
+    return(out)
 }
 
-advary <- function(data, i) {
-  dat <- data[-i]
-    k <- names(dat)
-  fla <- as.formula(paste(k[1], "~ ."))
-  out <- residuals(lm(fla, data = dat))
-  return(out)
+advary <- function(data, i, resp, xnames) {
+    k <- xnames[-i]
+    ols <- ols_regress(paste(resp, '~', paste(xnames[-i], collapse = ' + ')), data)
+    out <- ols$model$residuals
+    return(out)
 }
 
 # bartlett test
@@ -200,7 +198,7 @@ cdplot <- function(model){
 	     ckd$color1 <- factor(ckd$color)
 	ckd$Observation <- ordered(ckd$color1, levels = c("normal", "outlier"))
                ts <- 4 / length(ckd$cd)
-	           maxx <- max(ckd$cd) + 0.1
+	           maxx <- max(ckd$cd) + max(ckd$cd) * 0.01
            result <- list(ckd = ckd, maxx = maxx, ts = ts)
   return(result)
 
@@ -399,10 +397,16 @@ mcpout <- function(model, fullmodel, n, p, q) {
         `^`(2) %>%
         sum()
 
+    # mse <- fullmodel %>%
+    #     anova() %>%
+    #     `[[`(3) %>%
+    #     `[`(q)
+
     mse <- fullmodel %>%
-        anova() %>%
-        `[[`(3) %>%
-        `[`(q)
+    anova() %>%
+    `[[`(3) %>%
+    rev() %>%
+    `[`(1)
 
     sec <- (n - (2 * p))
 
@@ -799,11 +803,12 @@ rstudlev <- function(model) {
 
 # model selection data
 mod_sel_data <- function(model) {
-    mf <- model.frame(model)
-    nf <- mf[[1]]
-    nam <- names(mf)
-    mtrix <- model.matrix(model)[, -1]
-    d <- as.data.frame(cbind(nf, mtrix))
-    colnames(d)[1] <- nam[1]
-    return(d)
+    # mf <- model.frame(model)
+    # nf <- mf[[1]]
+    # nam <- names(mf)
+    # mtrix <- model.matrix(model)[, -1]
+    # d <- as.data.frame(cbind(nf, mtrix))
+    # colnames(d)[1] <- nam[1]
+    # return(d)
+    eval(model$call$data)
 }

@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2017-05-11" />
+<meta name="date" content="2017-06-05" />
 
 <title>Heteroscedasticity</title>
 
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Heteroscedasticity</h1>
-<h4 class="date"><em>2017-05-11</em></h4>
+<h4 class="date"><em>2017-06-05</em></h4>
 
 
 
@@ -150,7 +150,8 @@ mt$cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mt$cyl)
 </div>
 <div id="using-linear-model" class="section level4">
 <h4>Using linear model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>cyl, <span class="dt">data =</span> mt)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars$cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars$cyl)
+model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>cyl, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bartlett_test</span>(model)</code></pre></div>
 <pre><code>## 
 ##     Bartlett's Test of Homogenity of Variances    

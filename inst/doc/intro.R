@@ -23,10 +23,6 @@ ols_dfbetas_panel(model)
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_rfs_plot(model)
 
-## ----avplot, fig.width=5, fig.height=5, fig.align='center'---------------
-model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
-ols_avplots(model)
-
 ## ----bp1-----------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_bp_test(model)

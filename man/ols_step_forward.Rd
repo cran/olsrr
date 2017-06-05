@@ -2,10 +2,14 @@
 % Please edit documentation in R/ols-stepwise-forward-regression.R
 \name{ols_step_forward}
 \alias{ols_step_forward}
+\alias{ols_step_forward.default}
 \alias{plot.ols_step_forward}
 \title{Stepwise Forward Regression}
 \usage{
 ols_step_forward(model, ...)
+
+\method{ols_step_forward}{default}(model, penter = 0.3, details = FALSE,
+  ...)
 
 \method{plot}{ols_step_forward}(x, model = NA, ...)
 }
@@ -14,6 +18,10 @@ ols_step_forward(model, ...)
 
 \item{...}{other arguments}
 
+\item{penter}{p value; variables with p value less than \code{penter} will enter into the model}
+
+\item{details}{logical; if \code{TRUE}, will print the regression result at each step}
+
 \item{x}{an object of class \code{ols_step_forward}}
 }
 \value{
@@ -21,15 +29,15 @@ ols_step_forward(model, ...)
 An object of class \code{"ols_step_forward"} is a list containing the
 following components:
 
-\item{steps}{f statistic}
-\item{predictors}{p value of \code{score}}
-\item{rsquare}{degrees of freedom}
-\item{aic}{fitted values of the regression model}
-\item{sbc}{name of explanatory variables of fitted regression model}
-\item{sbic}{response variable}
-\item{adjr}{predictors}
-\item{rmse}{predictors}
-\item{mallows_cp}{predictors}
+\item{steps}{number of steps}
+\item{predictors}{variables added to the model}
+\item{rsquare}{coefficient of determination}
+\item{aic}{akaike information criteria}
+\item{sbc}{bayesian information criteria}
+\item{sbic}{sawa's bayesian information criteria}
+\item{adjr}{adjusted r-square}
+\item{rmse}{root mean square error}
+\item{mallows_cp}{mallow's Cp}
 \item{indvar}{predictors}
 }
 \description{
