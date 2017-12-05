@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2017-08-31" />
+<meta name="date" content="2017-12-05" />
 
 <title>Heteroscedasticity</title>
 
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Heteroscedasticity</h1>
-<h4 class="date"><em>2017-08-31</em></h4>
+<h4 class="date"><em>2017-12-05</em></h4>
 
 
 
@@ -96,9 +96,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>You can perform the test using 2 continuous variables, one continuous and one grouping variable, a formula or a linear model.</p>
 <div id="use-grouping-variable" class="section level4">
 <h4>Use grouping variable</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp, <span class="dt">data =</span> mtcars)
 resid &lt;-<span class="st"> </span><span class="kw">residuals</span>(model)
-cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars$cyl)
+cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars<span class="op">$</span>cyl)
 <span class="kw">ols_bartlett_test</span>(resid, <span class="dt">group_var =</span> cyl)</code></pre></div>
 <pre><code>## 
 ##     Bartlett's Test of Homogenity of Variances    
@@ -114,7 +114,7 @@ cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars$cyl)
 </div>
 <div id="using-variables" class="section level4">
 <h4>Using variables</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ols_bartlett_test</span>(hsb$read, hsb$write)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ols_bartlett_test</span>(hsb<span class="op">$</span>read, hsb<span class="op">$</span>write)</code></pre></div>
 <pre><code>## 
 ##     Bartlett's Test of Homogenity of Variances    
 ## ------------------------------------------------
@@ -134,8 +134,8 @@ cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars$cyl)
 <div id="using-formula" class="section level4">
 <h4>Using formula</h4>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mt &lt;-<span class="st"> </span>mtcars
-mt$cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mt$cyl)
-<span class="kw">ols_bartlett_test</span>(mpg ~<span class="st"> </span>cyl, <span class="dt">data =</span> mt)</code></pre></div>
+mt<span class="op">$</span>cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mt<span class="op">$</span>cyl)
+<span class="kw">ols_bartlett_test</span>(mpg <span class="op">~</span><span class="st"> </span>cyl, <span class="dt">data =</span> mt)</code></pre></div>
 <pre><code>## 
 ##     Bartlett's Test of Homogenity of Variances    
 ## ------------------------------------------------
@@ -150,8 +150,8 @@ mt$cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mt$cyl)
 </div>
 <div id="using-linear-model" class="section level4">
 <h4>Using linear model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars$cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars$cyl)
-model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>cyl, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars<span class="op">$</span>cyl &lt;-<span class="st"> </span><span class="kw">as.factor</span>(mtcars<span class="op">$</span>cyl)
+model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>cyl, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bartlett_test</span>(model)</code></pre></div>
 <pre><code>## 
 ##     Bartlett's Test of Homogenity of Variances    
@@ -172,7 +172,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 <p>You can perform the test using the fitted values of the model, the predictors in the model and a subset of the independent variables. It includes options to perform multiple tests and p value adjustments. The options for p value adjustments include Bonferroni, Sidak and Holm’s method.</p>
 <div id="use-fitted-values-of-the-model" class="section level4">
 <h4>Use fitted values of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -193,7 +193,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="use-independent-variables-of-the-model" class="section level4">
 <h4>Use independent variables of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -214,7 +214,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="use-independent-variables-of-the-model-and-perform-multiple-tests" class="section level4">
 <h4>Use independent variables of the model and perform multiple tests</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>, <span class="dt">multiple =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -241,7 +241,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="bonferroni-p-value-adjustment" class="section level4">
 <h4>Bonferroni p value Adjustment</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>, <span class="dt">multiple =</span> <span class="ot">TRUE</span>, <span class="dt">p.adj =</span> <span class="st">'bonferroni'</span>)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -268,7 +268,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="sidak-p-value-adjustment" class="section level4">
 <h4>Sidak p value Adjustment</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>, <span class="dt">multiple =</span> <span class="ot">TRUE</span>, <span class="dt">p.adj =</span> <span class="st">'sidak'</span>)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -295,7 +295,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="holms-p-value-adjustment" class="section level4">
 <h4>Holm’s p value Adjustment</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>drat, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_bp_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>, <span class="dt">multiple =</span> <span class="ot">TRUE</span>, <span class="dt">p.adj =</span> <span class="st">'holm'</span>)</code></pre></div>
 <pre><code>## 
 ##  Breusch Pagan Test for Heteroskedasticity
@@ -326,7 +326,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 <p>Test for heteroskedasticity under the assumption that the errors are independent and identically distributed (i.i.d.). You can perform the test using the fitted values of the model, the predictors in the model and a subset of the independent variables.</p>
 <div id="use-fitted-values-of-the-model-1" class="section level4">
 <h4>Use fitted values of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_score_test</span>(model)</code></pre></div>
 <pre><code>## 
 ##  Score Test for Heteroskedasticity
@@ -344,7 +344,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="use-independent-variables-of-the-model-1" class="section level4">
 <h4>Use independent variables of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_score_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## 
 ##  Score Test for Heteroskedasticity
@@ -362,7 +362,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="specify-variables" class="section level4">
 <h4>Specify variables</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_score_test</span>(model, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">'disp'</span>, <span class="st">'hp'</span>))</code></pre></div>
 <pre><code>## 
 ##  Score Test for Heteroskedasticity
@@ -384,7 +384,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 <p>F Test for heteroskedasticity under the assumption that the errors are independent and identically distributed (i.i.d.). You can perform the test using the fitted values of the model, the predictors in the model and a subset of the independent variables.</p>
 <div id="use-fitted-values-of-the-model-2" class="section level4">
 <h4>Use fitted values of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_f_test</span>(model)</code></pre></div>
 <pre><code>## 
 ##  F Test for Heteroskedasticity
@@ -403,7 +403,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="use-independent-variables-of-the-model-2" class="section level4">
 <h4>Use independent variables of the model</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_f_test</span>(model, <span class="dt">rhs =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## 
 ##  F Test for Heteroskedasticity
@@ -422,7 +422,7 @@ model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class=
 </div>
 <div id="specify-variables-1" class="section level4">
 <h4>Specify variables</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>hp +<span class="st"> </span>wt +<span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>disp <span class="op">+</span><span class="st"> </span>hp <span class="op">+</span><span class="st"> </span>wt <span class="op">+</span><span class="st"> </span>qsec, <span class="dt">data =</span> mtcars)
 <span class="kw">ols_f_test</span>(model, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">'disp'</span>, <span class="st">'hp'</span>))</code></pre></div>
 <pre><code>## 
 ##  F Test for Heteroskedasticity

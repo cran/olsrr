@@ -1,3 +1,6 @@
+#' @importFrom stringr str_detect
+#' @importFrom magrittr %>% extract
+#' @importFrom rlang is_formula
 #' @title Ordinary Least Squares Regression
 #' @description Ordinary Least Squares Regression
 #' @param object an object of class "formula" (or one that can be coerced to
@@ -40,15 +43,23 @@
 #' \item{predictors}{character vector; name of the predictor variables}
 #' \item{mvars}{character vector; name of the predictor variables including intercept}
 #' \item{model}{input model for \code{ols_regress}}
+#' @section Interaction Terms:
+#' If the model includes interaction terms, the standardized betas
+#' are computed after scaling and centering the predictors.
+#' @references https://www.ssc.wisc.edu/~hemken/Stataworkshops/stdBeta/Getting%20Standardized%20Coefficients%20Right.pdf
 #' @examples
 #' ols_regress(mpg ~ disp + hp + wt, data = mtcars)
+#'
+#' # if model includes interaction terms set iterm to TRUE
+#' ols_regress(mpg ~ disp * hp, data = mtcars, iterm = TRUE)
 #' @export
 #'
 ols_regress <- function(object, ...) UseMethod('ols_regress')
 
 #' @export
 #'
-ols_regress.default <- function(object, data, conf.level = 0.95, title = 'model', ...) {
+ols_regress.default <- function(object, data, conf.level = 0.95,
+                                iterm = FALSE, title = 'model', ...) {
 
 
   if (missing(data)) {
@@ -71,7 +82,22 @@ ols_regress.default <- function(object, data, conf.level = 0.95, title = 'model'
     stop(paste(title, 'is not a string, Please specify a string as title.'), call. = FALSE)
   }
 
-  result        <- reg_comp(object, data, conf.level, title)
+  # detect if model formula includes interaction terms
+  if (is_formula(object)) {
+    detect_iterm <- object %>%
+      str_detect(pattern = '\\*') %>%
+      extract(3)
+  } else {
+    detect_iterm <- object %>%
+      str_detect(pattern = '\\*')
+  }
+
+  # set interaction to TRUE if formula contains interaction terms
+  if (detect_iterm) {
+    iterm <- TRUE
+  }
+
+  result        <- reg_comp(object, data, conf.level, iterm, title)
   class(result) <- 'ols_regress'
   return(result)
 

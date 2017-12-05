@@ -24,3 +24,51 @@ test_that("all_subsets returns an error when number of predictors < 2", {
    model <- lm(y ~ x1, data = cement)
    expect_error(ols_all_subset(model), 'Please specify a model with at least 2 predictors.')
 })
+
+test_that('output from all subsets regression is as expected', {
+
+  x <- cat("# A tibble: 3 x 6
+  Index     N Predictors `R-Square` `Adj. R-Square` `Mallow's Cp`
+  <int> <int>      <chr>      <chr>           <chr>         <chr>
+1     1     1       disp    0.71834         0.70895       4.44379
+2     2     1         hp    0.60244         0.58919      17.79491
+3     3     2    disp hp    0.74824         0.73088       3.00000")
+
+  model <- lm(mpg ~ disp + hp, data = mtcars)
+  expect_output(print(ols_all_subset(model)), x)
+
+})
+
+test_that('all possible regression plots are as expected', {
+
+  skip_on_cran()
+
+  model <- lm(y ~ x1 + x2 + x3 + x4, data = cement)
+  k <- plot(ols_all_subset(model))
+
+  vdiffr::expect_doppelganger('all possible rsquare', k$rsquare_plot)
+  vdiffr::expect_doppelganger('all possible adjusted rsquare', k$adj_rsquare_plot)
+  vdiffr::expect_doppelganger('all possible mallows cp', k$mallows_cp_plot)
+  vdiffr::expect_doppelganger('all possible aic', k$aic_plot)
+  vdiffr::expect_doppelganger('all possible sbic', k$sbic_plot)
+  vdiffr::expect_doppelganger('all possible sbc', k$sbc_plot)
+
+})
+
+test_that('all possible regression betas are as expected', {
+
+  model <- lm(mpg ~ disp + hp + wt, data = mtcars)
+  k <- ols_all_subset_betas(model)
+  actual <- k %>%
+    select(predictor, beta) %>%
+    group_by(predictor) %>%
+    summarise_all(mean)
+
+  predictor <- c('(Intercept)', 'disp', 'hp', 'wt')
+  beta <- c(33.85901073, -0.02255579, -0.03899945, -4.09350456)
+
+  expected <- tibble(predictor, beta)
+  expect_equivalent(actual$predictor, expected$predictor)
+  expect_equivalent(actual$beta, expected$beta)
+
+})

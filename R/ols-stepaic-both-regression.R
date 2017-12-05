@@ -19,14 +19,18 @@
 #' \item{steps}{total number of steps}
 #' @references Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
 #' @examples
+#' \dontrun{
 #' # stepwise regression
 #' model <- lm(y ~ ., data = surgical)
 #' ols_stepaic_both(model)
+#' }
 #'
+#' \dontrun{
 #' # stepwise regression plot
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_stepaic_both(model)
 #' plot(k)
+#' }
 #'
 #' @export
 #'
@@ -238,7 +242,7 @@ plot.ols_stepaic_both <- function(x, ...) {
       geom_line(color = 'blue') +
       geom_point(color = 'blue', shape = 1, size = 2) +
       xlim(c(xmin, xmax)) + ylim(c(ymin, ymax)) +
-      xlab('Step') + ylab('AIC') + ggtitle('Stepwise AIC Forward Selection') +
+      xlab('Step') + ylab('AIC') + ggtitle('Stepwise AIC Both Direction Selection') +
       geom_text(data = d2, aes(x = x, y = y, label = tx), hjust = 0, nudge_x = 0.1)
 
     print(p)

@@ -27,14 +27,18 @@
 #' @references Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
 #'
 #' @examples
+#' \dontrun{
 #' # stepwise regression
 #' model <- lm(y ~ ., data = surgical)
 #' ols_stepwise(model)
+#' }
 #'
+#' \dontrun{
 #' # stepwise regression plot
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_stepwise(model)
 #' plot(k)
+#' }
 #'
 #' @export
 #'
@@ -325,7 +329,11 @@ plot.ols_stepwise <- function(x, model = NA, ...) {
     theme(
         axis.ticks = element_blank())
 
-    grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = 'Stepwise Regression')
+  grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = 'Stepwise Regression')
+
+  result <- list(rsquare_plot = p1, adj_rsquare_plot = p2, mallows_cp_plot = p3,
+                aic_plot = p4, sbic_plot = p5, sbc_plot = p6)
+  invisible(result)
 
 }
 

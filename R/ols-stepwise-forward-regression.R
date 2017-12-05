@@ -27,14 +27,18 @@
 #' Kutner, MH, Nachtscheim CJ, Neter J and Li W., 2004, Applied Linear Statistical Models (5th edition). 
 #' Chicago, IL., McGraw Hill/Irwin.
 #' @examples
+#' \dontrun{
 #' # stepwise forward regression
 #' model <- lm(y ~ ., data = surgical)
 #' ols_step_forward(model)
+#' }
 #'
+#' \dontrun{
 #' # stepwise forward regression plot
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_step_forward(model)
 #' plot(k)
+#' }
 #'
 #' @export
 #'
@@ -277,6 +281,10 @@ plot.ols_step_forward <- function(x, model = NA, ...) {
         axis.ticks = element_blank())
 
     grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = 'Stepwise Forward Regression')
+
+  result <- list(rsquare_plot = p1, adj_rsquare_plot = p2, mallows_cp_plot = p3,
+                aic_plot = p4, sbic_plot = p5, sbc_plot = p6)
+  invisible(result)
 
 }
 
