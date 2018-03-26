@@ -1,3 +1,23 @@
+# olsrr 0.5.0
+
+This is a minor release for bug fixes and API changes.
+
+## API Changes
+
+We have made some changes to the API to make it more user friendly:
+
+- all the variable selection procedures start with `ols_step_*`
+- all the test start with `ols_test_*`
+- all the plots start with `ols_plot_*`
+
+## Bug Fixes 
+
+- ols_regress returns error in the presence of interaction terms in the formula ([#49](https://github.com/rsquaredacademy/olsrr/issues/49))
+
+- ols_regress returns error in the presence of interaction terms in the formula ([#47](https://github.com/rsquaredacademy/olsrr/issues/47))
+
+- return current version ([#48](https://github.com/rsquaredacademy/olsrr/issues/48))
+
 # olsrr 0.4.0
 
 ## Enhancements
@@ -12,7 +32,7 @@
 - standardized betas in the presence of interaction terms  ([#46](https://github.com/rsquaredacademy/olsrr/issues/46))
 
 A big thanks goes to ([Dr. Kimberly Henry](http://psy.psych.colostate.edu/psylist/detail.asp?Num=163)) for
-identifying bugs and other valueable feedbacks that helped improve the package.
+identifying bugs and other valuable feedback that helped improve the package.
 
 # olsrr 0.3.0
 

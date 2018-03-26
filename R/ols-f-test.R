@@ -1,16 +1,19 @@
-#' @importFrom stats pf
-#' @title F Test for Constant Variance 
-#' @description Test for heteroskedasticity under the assumption that
-#' the errors are independent and identically distributed (i.i.d.).
-#' @param model an object of class \code{lm}
-#' @param fitted_values logical; if TRUE, use fitted values of regression model
-#' @param rhs logical; if TRUE, specifies that tests for heteroskedasticity be
-#' performed for the right-hand-side (explanatory) variables of the fitted
-#' regression model
-#' @param vars variables to be used for for heteroskedasticity test
-#' @param ... other arguments
-#' @return \code{ols_f_test} returns an object of class \code{"ols_f_test"}.
-#' An object of class \code{"ols_f_test"} is a list containing the
+#' F test
+#'
+#' @description
+#' Test for heteroskedasticity under the assumption that the errors are
+#' independent and identically distributed (i.i.d.).
+#'
+#' @param model An object of class \code{lm}.
+#' @param fitted_values Logical; if TRUE, use fitted values of regression model.
+#' @param rhs Logical; if TRUE, specifies that tests for heteroskedasticity be
+#'   performed for the right-hand-side (explanatory) variables of the fitted
+#'   regression model.
+#' @param vars Variables to be used for for heteroskedasticity test.
+#' @param ... Other arguments.
+#'
+#' @return \code{ols_test_f} returns an object of class \code{"ols_test_f"}.
+#' An object of class \code{"ols_test_f"} is a list containing the
 #' following components:
 #'
 #' \item{f}{f statistic}
@@ -22,103 +25,197 @@
 #' \item{vars}{variables to be used for heteroskedasticity test}
 #' \item{resp}{response variable}
 #' \item{preds}{predictors}
-#' @references Wooldridge, J. M. 2013. Introductory Econometrics: A Modern Approach. 5th ed. Mason, OH: South-Western.
-#' @examples 
+#'
+#' @references
+#' Wooldridge, J. M. 2013. Introductory Econometrics: A Modern Approach. 5th ed. Mason, OH: South-Western.
+#'
+#' @section Deprecated Function:
+#' \code{ols_f_test()} has been deprecated. Instead use \code{ols_test_f()}.
+#'
+#' @examples
 #' # model
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #'
 #' # using fitted values
-#' ols_f_test(model)
-#' 
+#' ols_test_f(model)
+#'
 #' # using all predictors of the model
-#' ols_f_test(model, rhs = TRUE)
-#' 
+#' ols_test_f(model, rhs = TRUE)
+#'
 #' # using fitted values
-#' ols_f_test(model, vars = c('disp', 'hp'))
+#' ols_test_f(model, vars = c('disp', 'hp'))
+#'
+#' @family heteroskedasticity tests
+#'
+#' @importFrom stats pf
+#'
 #' @export
 #'
-ols_f_test <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) UseMethod('ols_f_test')
+ols_test_f <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) UseMethod("ols_test_f")
 
 #' @export
 #'
-ols_f_test.default <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) {
+ols_test_f.default <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) {
 
-    if (!all(class(model) == 'lm')) {
-        stop('Please specify a OLS linear regression model.', call. = FALSE)
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
+  }
+
+  if (!is.logical(fitted_values)) {
+    stop("fitted.values must be either TRUE or FALSE")
+  }
+
+  if (!is.logical(rhs)) {
+    stop("rhs must be either TRUE or FALSE")
+  }
+
+  if (length(vars) > 0) {
+    if (!all(vars %in% names(model$coefficients))) {
+      stop("vars must be a subset of the predictors in the model")
     }
+    fitted_values <- FALSE
+  }
 
-    if (!is.logical(fitted_values)) {
-    	stop('fitted.values must be either TRUE or FALSE')
-    }
+  l <- avplots_data(model)
 
-    if (!is.logical(rhs)) {
-    	stop('rhs must be either TRUE or FALSE')
-    }
+  nam <-
+    l %>%
+    names() %>%
+    extract(-1)
 
-    if (length(vars) > 0) {
-    	if (!all(vars %in% names(model$coefficients))) {
-    		stop('vars must be a subset of the predictors in the model')
-    	}
-    	fitted_values <- FALSE
-    }
+  resp <-
+    l %>%
+    names() %>%
+    extract(1)
 
-    # l    <- model.frame(model)
-    m1 <- tibble::as_data_frame(model.frame(model))
-    m2 <- tibble::as_data_frame(model.matrix(model)[, c(-1)])
-    l <- tibble::as_data_frame(cbind(m1[, c(1)], m2))
-    nam  <- names(l)[-1]
-    resp <- names(l)[1]
-    n    <- nrow(l)
+  n <- nrow(l)
 
-    if (rhs) {
-      fitted_values <- FALSE
-			    k <- frhs(nam, model, n, l)
-			    f <- k[[1]]
-			numdf <- k[[2]]
-			dendf <- k[[3]]
-			    p <- pf(f, numdf, dendf, lower.tail = F)
-
+  if (rhs) {
+    fitted_values <- FALSE
+    k             <- frhs(nam, model, n, l)
+    result        <- ftest_result(k)
+  } else {
+    if (fitted_values) {
+      k      <- ffit(model)
+      result <- ftest_result(k)
     } else {
-
-    	if (fitted_values) {
-
-		k <- ffit(model)
-        f <- k[[1]]
-    numdf <- k[[2]]
-    dendf <- k[[3]]
-				p <- pf(f, numdf, dendf, lower.tail = F)
-
-
-    	} else {
-
-			k <- fvar(n, l, model, vars)
-            f <- k[[1]]
-  			numdf <- k[[2]]
-  			dendf <- k[[3]]
-				    p <- pf(f, numdf, dendf, lower.tail = F)
-
-    	}
-
+      k      <- fvar(n, l, model, vars)
+      result <- ftest_result(k)
     }
+  }
 
-    out <- list(f     = f, 
-    	          p     = p, 
-    	          numdf = numdf,
-    	          dendf = dendf,
-    	          fv    = fitted_values,
-    	          rhs   = rhs,
-    	          vars  = vars,
-    	          resp  = resp,
-    	          preds = nam)
+  out <- list(
+    f     = result$f,
+    p     = result$p,
+    numdf = result$numdf,
+    dendf = result$dendf,
+    fv    = fitted_values,
+    rhs   = rhs,
+    vars  = vars,
+    resp  = resp,
+    preds = nam
+  )
 
-    class(out) <- 'ols_f_test'
+  class(out) <- "ols_test_f"
 
-    return(out)
+  return(out)
+}
 
+#' @export
+#' @rdname ols_test_f
+#' @usage NULL
+#'
+ols_f_test <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) {
+  .Deprecated("ols_test_f()")
 }
 
 #' @export
 #'
-print.ols_f_test <- function(x, ...) {
-	print_ftest(x)
+print.ols_test_f <- function(x, ...) {
+  print_ftest(x)
+}
+
+frhs <- function(nam, model, n, l) {
+
+  fstatistic <- NULL
+
+  np <- length(nam)
+
+  var_resid <-
+    model_rss(model) %>%
+    divide_by(n) %>%
+    subtract(1)
+
+  ind <- model %>%
+    residuals() %>%
+    raise_to_power(2) %>%
+    divide_by(var_resid)
+
+  l     <- cbind(l, ind)
+  mdata <- l[-1]
+
+  lm(ind ~ ., data = mdata) %>%
+    summary() %>%
+    use_series(fstatistic)
+
+}
+
+fvar <- function(n, l, model, vars) {
+
+  fstatistic <- NULL
+
+  var_resid <-
+    model_rss(model) %>%
+    divide_by(n) %>%
+    subtract(1)
+
+  ind <- model %>%
+    residuals() %>%
+    raise_to_power(2) %>%
+    divide_by(var_resid)
+
+  mdata <- l[-1]
+  dl    <- mdata[, vars]
+  dk    <- as.data.frame(cbind(ind, dl))
+
+  lm(ind ~ ., data = dk) %>%
+    summary() %>%
+    use_series(fstatistic)
+
+}
+
+ffit <- function(model) {
+
+  fstatistic <- NULL
+
+  pred     <- fitted(model)
+  pred_len <- length(pred)
+
+  resid <-
+    model %>%
+    use_series(residuals) %>%
+    raise_to_power(2)
+
+  avg_resid <-
+    resid %>%
+    sum() %>%
+    divide_by(pred_len)
+
+  scaled_resid <- resid / avg_resid
+
+  lm(scaled_resid ~ pred) %>%
+    summary() %>%
+    use_series(fstatistic)
+
+}
+
+ftest_result <- function(k) {
+
+  f     <- k[[1]]
+  numdf <- k[[2]]
+  dendf <- k[[3]]
+  p     <- pf(f, numdf, dendf, lower.tail = F)
+
+  list(f = f, numdf = numdf, dendf = dendf, p = p)
+
 }

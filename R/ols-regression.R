@@ -1,13 +1,16 @@
-#' @importFrom stringr str_detect
-#' @importFrom magrittr %>% extract
-#' @importFrom rlang is_formula
-#' @title Ordinary Least Squares Regression
-#' @description Ordinary Least Squares Regression
-#' @param object an object of class "formula" (or one that can be coerced to
-#' that class): a symbolic description of the model to be fitted or class \code{lm}
-#' @param ... other inputs
-#' @return \code{ols_regress} returns an object of class \code{"ols_regress"}. An object
-#' of class \code{"ols_regress"} is a list containing the following components:
+#' Ordinary least squares regression
+#'
+#' @description Ordinary least squares regression.
+#'
+#' @param object An object of class "formula" (or one that can be coerced to
+#'   that class): a symbolic description of the model to be fitted or class
+#'   \code{lm}.
+#'
+#' @param ... Other inputs.
+#'
+#' @return \code{ols_regress} returns an object of class \code{"ols_regress"}.
+#' An object of class \code{"ols_regress"} is a list containing the following
+#' components:
 #'
 #' \item{r}{square root of rsquare, correlation between observed and predicted values of dependent variable}
 #' \item{rsq}{coefficient of determination or r-square}
@@ -43,53 +46,59 @@
 #' \item{predictors}{character vector; name of the predictor variables}
 #' \item{mvars}{character vector; name of the predictor variables including intercept}
 #' \item{model}{input model for \code{ols_regress}}
+#'
 #' @section Interaction Terms:
 #' If the model includes interaction terms, the standardized betas
 #' are computed after scaling and centering the predictors.
+#'
 #' @references https://www.ssc.wisc.edu/~hemken/Stataworkshops/stdBeta/Getting%20Standardized%20Coefficients%20Right.pdf
+#'
 #' @examples
 #' ols_regress(mpg ~ disp + hp + wt, data = mtcars)
 #'
 #' # if model includes interaction terms set iterm to TRUE
-#' ols_regress(mpg ~ disp * hp, data = mtcars, iterm = TRUE)
+#' ols_regress(mpg ~ disp * wt, data = mtcars, iterm = TRUE)
+#'
+#' @importFrom stringr str_detect
+#' @importFrom magrittr %>% extract
+#' @importFrom rlang is_formula
+#'
 #' @export
 #'
-ols_regress <- function(object, ...) UseMethod('ols_regress')
+ols_regress <- function(object, ...) UseMethod("ols_regress")
 
 #' @export
 #'
 ols_regress.default <- function(object, data, conf.level = 0.95,
-                                iterm = FALSE, title = 'model', ...) {
-
-
+                                iterm = FALSE, title = "model", ...) {
   if (missing(data)) {
-    stop('data missing', call. = FALSE)
+    stop("data missing", call. = FALSE)
   }
 
-  if(!is.data.frame(data)) {
-    stop('data must be a data frame', call. = FALSE)
+  if (!is.data.frame(data)) {
+    stop("data must be a data frame", call. = FALSE)
   }
 
   if (!is.numeric(conf.level)) {
-    stop('conf.level must be numeric', call. = FALSE)
+    stop("conf.level must be numeric", call. = FALSE)
   }
 
   if ((conf.level < 0) | (conf.level > 1)) {
-    stop('conf.level must be between 0 and 1', call. = FALSE)
+    stop("conf.level must be between 0 and 1", call. = FALSE)
   }
 
   if (!is.character(title)) {
-    stop(paste(title, 'is not a string, Please specify a string as title.'), call. = FALSE)
+    stop(paste(title, "is not a string, Please specify a string as title."), call. = FALSE)
   }
 
   # detect if model formula includes interaction terms
   if (is_formula(object)) {
     detect_iterm <- object %>%
-      str_detect(pattern = '\\*') %>%
+      str_detect(pattern = "\\*") %>%
       extract(3)
   } else {
     detect_iterm <- object %>%
-      str_detect(pattern = '\\*')
+      str_detect(pattern = "\\*")
   }
 
   # set interaction to TRUE if formula contains interaction terms
@@ -97,24 +106,25 @@ ols_regress.default <- function(object, data, conf.level = 0.95,
     iterm <- TRUE
   }
 
-  result        <- reg_comp(object, data, conf.level, iterm, title)
-  class(result) <- 'ols_regress'
+  result <- reg_comp(object, data, conf.level, iterm, title)
+  class(result) <- "ols_regress"
   return(result)
-
 }
 
 #' @rdname ols_regress
 #' @export
 #'
 ols_regress.lm <- function(object, ...) {
-    formula <- formula(object)
-    # data    <- model.frame(object)
-    data <- eval(object$call$data)
-    ols_regress.default(object = formula, data = data)
+
+  formula <- formula(object)
+  data    <- eval(object$call$data)
+
+  ols_regress.default(object = formula, data = data)
+
 }
 
 #' @export
 #'
 print.ols_regress <- function(x, ...) {
-    print_reg(x)
+  print_reg(x)
 }

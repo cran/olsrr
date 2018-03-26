@@ -2,26 +2,27 @@
 % Please edit documentation in R/ols-information-criteria.R
 \name{ols_aic}
 \alias{ols_aic}
-\title{AIC}
+\title{Akaike information criterion}
 \usage{
 ols_aic(model, method = c("R", "STATA", "SAS"))
 }
 \arguments{
-\item{model}{an object of class \code{lm}}
+\item{model}{An object of class \code{lm}.}
 
-\item{method}{a character vector; specify the method to compute AIC. Valid
-options include R, STATA and SAS}
+\item{method}{A character vector; specify the method to compute AIC. Valid
+options include R, STATA and SAS.}
 }
 \value{
-Akaike Information Criterion
+Akaike information criterion of the model.
 }
 \description{
-Akaike Information Criterion
+Akaike information criterion for model selection.
 }
 \details{
-AIC provides a means for model selection. Given a collection of models for the data, AIC estimates the
-quality of each model, relative to each of the other models. R and STATA use loglikelihood to compute AIC. SAS
-uses residual sum of squares. Below is the formula in each case:
+AIC provides a means for model selection. Given a collection of models for
+the data, AIC estimates the quality of each model, relative to each of the
+other models. R and STATA use loglikelihood to compute AIC. SAS uses residual
+sum of squares. Below is the formula in each case:
 
 \emph{R & STATA}
 \deqn{AIC = -2(loglikelihood) + 2p}
@@ -43,6 +44,7 @@ ols_aic(model, method = 'STATA')
 # using SAS computation method
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_aic(model, method = 'SAS')
+
 }
 \references{
 Akaike, H. (1969). “Fitting Autoregressive Models for Prediction.” Annals of the Institute of Statistical
@@ -50,4 +52,10 @@ Mathematics 21:243–247.
 
 Judge, G. G., Griffiths, W. E., Hill, R. C., and Lee, T.-C. (1980). The Theory and Practice of Econometrics.
 New York: John Wiley & Sons.
+}
+\seealso{
+Other model selection criteria: \code{\link{ols_apc}},
+  \code{\link{ols_fpe}}, \code{\link{ols_hsp}},
+  \code{\link{ols_mallows_cp}}, \code{\link{ols_msep}},
+  \code{\link{ols_sbc}}, \code{\link{ols_sbic}}
 }

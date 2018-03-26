@@ -1,28 +1,34 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-olsrr: Tools for building OLS Regression models
------------------------------------------------
 
-**Author:** [Aravind Hebbali](http://www.aravindhebbali.com/)<br/> **License:** [MIT](https://opensource.org/licenses/MIT)
+## olsrr: Tools for building OLS Regression models
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/olsrr)](https://cran.r-project.org/package=olsrr) [![Travis-CI Build Status](https://travis-ci.org/rsquaredacademy/olsrr.svg?branch=master)](https://travis-ci.org/rsquaredacademy/olsrr) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/rsquaredacademy/olsrr?branch=master&svg=true)](https://ci.appveyor.com/project/rsquaredacademy/olsrr) [![](https://cranlogs.r-pkg.org/badges/grand-total/olsrr)](https://cran.r-project.org/package=olsrr)
+**Author:** [Aravind Hebbali](https://www.aravindhebbali.com/)<br/>
+**License:**
+[MIT](https://opensource.org/licenses/MIT)
 
-Overview
---------
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/olsrr)](https://cran.r-project.org/package=olsrr)
+[![Travis-CI Build
+Status](https://travis-ci.org/rsquaredacademy/olsrr.svg?branch=master)](https://travis-ci.org/rsquaredacademy/olsrr)
+[![AppVeyor Build
+Status](https://ci.appveyor.com/api/projects/status/github/rsquaredacademy/olsrr?branch=master&svg=true)](https://ci.appveyor.com/project/rsquaredacademy/olsrr)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/olsrr)](https://cran.r-project.org/package=olsrr)
 
-The olsrr package provides following tools for teaching and learning OLS regression using R:
+## Overview
 
--   Comprehensive Regression Output
--   Variable Selection Procedures
--   Heteroskedasticity Tests
--   Collinearity Diagnostics
--   Model Fit Assessment
--   Measures of Influence
--   Residual Diagnostics
--   Variable Contribution Assessment
+The olsrr package provides following tools for teaching and learning OLS
+regression using R:
 
-Installation
-------------
+  - Comprehensive Regression Output
+  - Variable Selection Procedures
+  - Heteroskedasticity Tests
+  - Collinearity Diagnostics
+  - Model Fit Assessment
+  - Measures of Influence
+  - Residual Diagnostics
+  - Variable Contribution Assessment
+
+## Installation
 
 You can install olsrr from github with:
 
@@ -35,30 +41,36 @@ install.packages("olsrr")
 devtools::install_github("rsquaredacademy/olsrr")
 ```
 
-Shiny App
----------
+## Shiny App
 
 Use `ols_launch_app()` to explore the package using a shiny app.
 
-Vignettes
----------
+## Vignettes
 
--   [Quick Overview](http://www.rsquaredacademy.com/olsrr/articles/intro.html)
--   [Variable Selection Methods](http://www.rsquaredacademy.com/olsrr/articles/variable_selection.html)
--   [Residual Diagnostics](http://www.rsquaredacademy.com/olsrr/articles/residual_diagnostics.html)
--   [Heteroskedasticity](http://www.rsquaredacademy.com/olsrr/articles/heteroskedasticity.html)
--   [Measures of Influence](http://www.rsquaredacademy.com/olsrr/articles/influence_measures.html)
--   [Collinearity Diagnostics](http://www.rsquaredacademy.com/olsrr/articles/regression_diagnostics.html)
+  - [Quick
+    Overview](https://olsrr.rsquaredacademy.com/articles/intro.html)
+  - [Variable Selection
+    Methods](https://olsrr.rsquaredacademy.com/articles/variable_selection.html)
+  - [Residual
+    Diagnostics](https://olsrr.rsquaredacademy.com/articles/residual_diagnostics.html)
+  - [Heteroskedasticity](https://olsrr.rsquaredacademy.com/articles/heteroskedasticity.html)
+  - [Measures of
+    Influence](https://olsrr.rsquaredacademy.com/articles/influence_measures.html)
+  - [Collinearity
+    Diagnostics](https://olsrr.rsquaredacademy.com/articles/regression_diagnostics.html)
 
-Consistent Prefix
------------------
+## Consistent Prefix
 
 olsrr uses consistent prefix `ols_` for easy tab completion.
 
-Quick Demo
-----------
+## Quick Demo
 
-olsrr is built with the aim of helping those users who are new to the R language. If you know how to write a `formula` or build models using `lm`, you will find olsrr very useful. Most of the functions use an object of class `lm` as input. So you just need to build a model using `lm` and then pass it onto the functions in olsrr. Below is a quick demo:
+olsrr is built with the aim of helping those users who are new to the R
+language. If you know how to write a `formula` or build models using
+`lm`, you will find olsrr very useful. Most of the functions use an
+object of class `lm` as input. So you just need to build a model using
+`lm` and then pass it onto the functions in olsrr. Below is a quick
+demo:
 
 ##### Regression
 
@@ -97,13 +109,152 @@ ols_regress(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #> ----------------------------------------------------------------------------------------
 ```
 
+##### Stepwise Regression
+
+Build regression model from a set of candidate predictor variables by
+entering and removing predictors based on p values, in a stepwise manner
+until there is no variable left to enter or remove any more.
+
+###### Variable Selection
+
+``` r
+# stepwise regression
+model <- lm(y ~ ., data = surgical)
+ols_step_both_p(model)
+#> Stepwise Selection Method   
+#> ---------------------------
+#> 
+#> Candidate Terms: 
+#> 
+#> 1. bcs 
+#> 2. pindex 
+#> 3. enzyme_test 
+#> 4. liver_test 
+#> 5. age 
+#> 6. gender 
+#> 7. alc_mod 
+#> 8. alc_heavy 
+#> 
+#> We are selecting variables based on p value...
+#> 
+#> Variables Entered/Removed: 
+#> 
+#> - liver_test added 
+#> - alc_heavy added 
+#> - enzyme_test added 
+#> - pindex added 
+#> - bcs added 
+#> 
+#> No more variables to be added/removed.
+#> 
+#> 
+#> Final Model Output 
+#> ------------------
+#> 
+#>                           Model Summary                           
+#> -----------------------------------------------------------------
+#> R                       0.884       RMSE                 195.454 
+#> R-Squared               0.781       Coef. Var             27.839 
+#> Adj. R-Squared          0.758       MSE                38202.426 
+#> Pred R-Squared          0.700       MAE                  137.656 
+#> -----------------------------------------------------------------
+#>  RMSE: Root Mean Square Error 
+#>  MSE: Mean Square Error 
+#>  MAE: Mean Absolute Error 
+#> 
+#>                                  ANOVA                                  
+#> -----------------------------------------------------------------------
+#>                    Sum of                                              
+#>                   Squares        DF    Mean Square      F         Sig. 
+#> -----------------------------------------------------------------------
+#> Regression    6535804.090         5    1307160.818    34.217    0.0000 
+#> Residual      1833716.447        48      38202.426                     
+#> Total         8369520.537        53                                    
+#> -----------------------------------------------------------------------
+#> 
+#>                                       Parameter Estimates                                        
+#> ------------------------------------------------------------------------------------------------
+#>       model         Beta    Std. Error    Std. Beta      t        Sig         lower       upper 
+#> ------------------------------------------------------------------------------------------------
+#> (Intercept)    -1178.330       208.682                 -5.647    0.000    -1597.914    -758.746 
+#>  liver_test       58.064        40.144        0.156     1.446    0.155      -22.652     138.779 
+#>   alc_heavy      317.848        71.634        0.314     4.437    0.000      173.818     461.878 
+#> enzyme_test        9.748         1.656        0.521     5.887    0.000        6.419      13.077 
+#>      pindex        8.924         1.808        0.380     4.935    0.000        5.288      12.559 
+#>         bcs       59.864        23.060        0.241     2.596    0.012       13.498     106.230 
+#> ------------------------------------------------------------------------------------------------
+#> 
+#>                                 Stepwise Selection Summary                                 
+#> ------------------------------------------------------------------------------------------
+#>                         Added/                   Adj.                                         
+#> Step     Variable      Removed     R-Square    R-Square     C(p)        AIC         RMSE      
+#> ------------------------------------------------------------------------------------------
+#>    1    liver_test     addition       0.455       0.444    62.5120    771.8753    296.2992    
+#>    2     alc_heavy     addition       0.567       0.550    41.3680    761.4394    266.6484    
+#>    3    enzyme_test    addition       0.659       0.639    24.3380    750.5089    238.9145    
+#>    4      pindex       addition       0.750       0.730     7.5370    735.7146    206.5835    
+#>    5        bcs        addition       0.781       0.758     3.1920    730.6204    195.4544    
+#> ------------------------------------------------------------------------------------------
+```
+
+##### Stepwise AIC Backward Regression
+
+Build regression model from a set of candidate predictor variables by
+removing predictors based on Akaike Information Criteria, in a stepwise
+manner until there is no variable left to remove any more.
+
+###### Variable Selection
+
+``` r
+# stepwise aic backward regression
+model <- lm(y ~ ., data = surgical)
+k <- ols_step_backward_aic(model)
+#> Backward Elimination Method 
+#> ---------------------------
+#> 
+#> Candidate Terms: 
+#> 
+#> 1 . bcs 
+#> 2 . pindex 
+#> 3 . enzyme_test 
+#> 4 . liver_test 
+#> 5 . age 
+#> 6 . gender 
+#> 7 . alc_mod 
+#> 8 . alc_heavy 
+#> 
+#> 
+#> Variables Removed: 
+#> 
+#> - alc_mod 
+#> - gender 
+#> - age 
+#> 
+#> No more variables to be removed.
+k
+#> 
+#> 
+#>                         Backward Elimination Summary                         
+#> ---------------------------------------------------------------------------
+#> Variable        AIC          RSS          Sum Sq        R-Sq      Adj. R-Sq 
+#> ---------------------------------------------------------------------------
+#> Full Model    736.390    1825905.713    6543614.824    0.78184      0.74305 
+#> alc_mod       734.407    1826477.828    6543042.709    0.78177      0.74856 
+#> gender        732.494    1829435.617    6540084.920    0.78142      0.75351 
+#> age           730.620    1833716.447    6535804.090    0.78091      0.75808 
+#> ---------------------------------------------------------------------------
+```
+
 ##### Breusch Pagan Test
 
-Breusch Pagan test is used to test for herteroskedasticity (non-constant error variance). It tests whether the variance of the errors from a regression is dependent on the values of the independent variables. It is a *χ*<sup>2</sup> test.
+Breusch Pagan test is used to test for herteroskedasticity (non-constant
+error variance). It tests whether the variance of the errors from a
+regression is dependent on the values of the independent variables. It
+is a \(\chi^{2}\) test.
 
 ``` r
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
-ols_bp_test(model)
+ols_test_breusch_pagan(model)
 #> 
 #>  Breusch Pagan Test for Heteroskedasticity
 #>  -----------------------------------------
@@ -130,12 +281,12 @@ ols_coll_diag(model)
 #> Tolerance and Variance Inflation Factor
 #> ---------------------------------------
 #> # A tibble: 4 x 3
-#>   Variables Tolerance      VIF
-#>       <chr>     <dbl>    <dbl>
-#> 1      disp 0.1252279 7.985439
-#> 2        hp 0.1935450 5.166758
-#> 3        wt 0.1445726 6.916942
-#> 4      qsec 0.3191708 3.133119
+#>   Variables Tolerance   VIF
+#>   <chr>         <dbl> <dbl>
+#> 1 disp          0.125  7.99
+#> 2 hp            0.194  5.17
+#> 3 wt            0.145  6.92
+#> 4 qsec          0.319  3.13
 #> 
 #> 
 #> Eigenvalue and Condition Index
@@ -154,71 +305,6 @@ ols_coll_diag(model)
 #> 5 0.2598094157 0.9925403056
 ```
 
-##### Stepwise Regression
-
-Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more.
-
-###### Variable Selection
-
-``` r
-# stepwise regression
-model <- lm(y ~ ., data = surgical)
-ols_stepwise(model)
-#> We are selecting variables based on p value...
-#> 1 variable(s) added....
-#> 1 variable(s) added...
-#> 1 variable(s) added...
-#> 1 variable(s) added...
-#> 1 variable(s) added...
-#> No more variables to be added or removed.
-#> Stepwise Selection Method                                                                  
-#> 
-#> Candidate Terms:                                                                           
-#> 
-#> 1 . bcs                                                                                    
-#> 2 . pindex                                                                                 
-#> 3 . enzyme_test                                                                            
-#> 4 . liver_test                                                                             
-#> 5 . age                                                                                    
-#> 6 . gender                                                                                 
-#> 7 . alc_mod                                                                                
-#> 8 . alc_heavy                                                                              
-#> 
-#> ------------------------------------------------------------------------------------------
-#>                                 Stepwise Selection Summary                                 
-#> ------------------------------------------------------------------------------------------
-#>                         Added/                   Adj.                                         
-#> Step     Variable      Removed     R-Square    R-Square     C(p)        AIC         RMSE      
-#> ------------------------------------------------------------------------------------------
-#>    1    liver_test     addition       0.455       0.444    62.5120    771.8753    296.2992    
-#>    2     alc_heavy     addition       0.567       0.550    41.3680    761.4394    266.6484    
-#>    3    enzyme_test    addition       0.659       0.639    24.3380    750.5089    238.9145    
-#>    4      pindex       addition       0.750       0.730     7.5370    735.7146    206.5835    
-#>    5        bcs        addition       0.781       0.758     3.1920    730.6204    195.4544    
-#> ------------------------------------------------------------------------------------------
-```
-
-##### Stepwise AIC Backward Regression
-
-Build regression model from a set of candidate predictor variables by removing predictors based on Akaike Information Criteria, in a stepwise manner until there is no variable left to remove any more.
-
-###### Variable Selection
-
-``` r
-# stepwise aic backward regression
-model <- lm(y ~ ., data = surgical)
-ols_stepaic_backward(model)
-#> 
-#> 
-#>                        Backward Elimination Summary                        
-#> -------------------------------------------------------------------------
-#> Variable        AIC          RSS          Sum Sq       R-Sq     Adj. R-Sq 
-#> -------------------------------------------------------------------------
-#> Full Model    736.390    1825905.713    6543614.824    0.782        0.743 
-#> alc_mod       734.407    1826477.828    6543042.709    0.782        0.749 
-#> gender        732.494    1829435.617    6540084.920    0.781        0.754 
-#> age           730.620    1833716.447    6535804.090    0.781        0.758 
-#> -------------------------------------------------------------------------
-```
-
-Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of
+Conduct](CONDUCT.md). By participating in this project you agree to
+abide by its terms.

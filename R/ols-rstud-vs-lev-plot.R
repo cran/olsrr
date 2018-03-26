@@ -1,46 +1,167 @@
-#' @importFrom dplyr filter
-#' @importFrom ggplot2 geom_vline
-#' @title Studentized Residuals vs Leverage Plot 
-#' @description Graph for detecting outliers and/or observations with high leverage.
-#' @param model an object of class \code{lm}
+#' Studentized residuals vs leverage plot
+#'
+#' Graph for detecting outliers and/or observations with high leverage.
+#'
+#' @param model An object of class \code{lm}.
+#'
+#' @section Deprecated Function:
+#' \code{ols_rsdlev_plot()} has been deprecated. Instead use \code{ols_plot_resid_lev()}.
+#'
 #' @examples
 #' model <- lm(read ~ write + math + science, data = hsb)
-#' ols_rsdlev_plot(model)
+#' ols_plot_resid_lev(model)
+#'
+#' @importFrom dplyr filter
+#' @importFrom ggplot2 geom_vline
+#'
+#' @seealso [ols_plot_resid_stud_fit()], [ols_plot_resid_lev()]
 #'
 #' @export
 #'
-ols_rsdlev_plot <- function(model) {
+ols_plot_resid_lev <- function(model) {
 
-	if (!all(class(model) == 'lm')) {
-    stop('Please specify a OLS linear regression model.', call. = FALSE)
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
   }
 
-	Observation <- NULL
-	   leverage <- NULL
-	        txt <- NULL
-	        obs <- NULL
-	       resp <- model %>% model.frame() %>% names() %>% `[`(1)
-						g <- rstudlev(model)
-						d <- g$levrstud
-						d <- d %>% mutate(txt = ifelse(Observation == 'normal', NA, obs))
-						f <- d %>% filter(., Observation == 'outlier') %>% select(obs, leverage, rstudent)
+  lev_thrsh <- NULL
+  fct_color <- NULL
+  leverage  <- NULL
+  levrstud  <- NULL
+  txt       <- NULL
+  obs       <- NULL
+  color     <- NULL
 
-	p <- ggplot(d, aes(leverage, rstudent, label = txt)) +
-		geom_point(shape = 1, aes(colour = Observation)) +
-		scale_color_manual(values = c("blue", "red", "green", "violet")) +
-		xlim(g$minx, g$maxx) + ylim(g$miny, g$maxy) +
-		xlab('Leverage') + ylab('RStudent') +
-		ggtitle(paste("Outlier and Leverage Diagnostics for", resp)) +
-		geom_hline(yintercept = c(2, -2), colour = 'maroon') +
-		geom_vline(xintercept = g$lev_thrsh, colour = 'maroon') +
-		geom_text(vjust = -1, size = 3, family="serif", fontface="italic", colour="darkred") +
-		annotate("text", x = Inf, y = Inf, hjust = 1.2, vjust = 2, 
-      family="serif", fontface="italic", colour="darkred", 
-      label = paste('Threshold:', round(g$lev_thrsh, 3)))
+  resp <-
+    model %>%
+    model.frame() %>%
+    names() %>%
+    extract(1)
 
-	suppressWarnings(print(p))
-	colnames(f) <- c("Observation", "Leverage", "Studentized Residuals")
-	result <- list(leverage = f, threshold = g$lev_thrsh, plot = p)
-	invisible(result)
+  title <- paste("Outlier and Leverage Diagnostics for", resp)
+  g     <- rstudlev(model)
 
+  ann_paste <-
+    g %>%
+    use_series(lev_thrsh) %>%
+    round(3)
+
+  ann_label <- paste("Threshold:", ann_paste)
+
+  d <-
+    g %>%
+    use_series(levrstud) %>%
+    mutate(
+      txt = ifelse(color == "normal", NA, obs)
+    )
+
+  f <-
+    d %>%
+    filter(color == "outlier") %>%
+    select(obs, leverage, rstudent) %>%
+    set_colnames(c("observation", "leverage", "stud_resid"))
+
+  p <- ggplot(d, aes(leverage, rstudent, label = txt)) +
+    geom_point(shape = 1, aes(colour = fct_color)) +
+    scale_color_manual(values = c("blue", "red", "green", "violet")) +
+    xlim(g$minx, g$maxx) + ylim(g$miny, g$maxy) + labs(colour = "Observation") +
+    xlab("Leverage") + ylab("RStudent") + ggtitle(title) +
+    geom_hline(yintercept = c(2, -2), colour = "maroon") +
+    geom_vline(xintercept = g$lev_thrsh, colour = "maroon") +
+    geom_text(vjust = -1, size = 3, family = "serif", fontface = "italic",
+              colour = "darkred") +
+    annotate("text", x = Inf, y = Inf, hjust = 1.2, vjust = 2,
+      family = "serif", fontface = "italic", colour = "darkred",
+      label = ann_label)
+
+  suppressWarnings(print(p))
+  result <- list(leverage = f, threshold = g$lev_thrsh, plot = p)
+  invisible(result)
+
+}
+
+
+#' @importFrom dplyr case_when
+rstudlev <- function(model) {
+
+  color <- NULL
+
+  leverage <-
+    model %>%
+    hatvalues() %>%
+    unname()
+
+  rstudent <-
+    model %>%
+    rstudent() %>%
+    unname()
+
+  k <-
+    model %>%
+    coefficients() %>%
+    length()
+
+  n <-
+    model %>%
+    model.frame() %>%
+    nrow()
+
+  lev_thrsh <-
+    2 %>%
+    multiply_by(k) %>%
+    divide_by(n)
+
+  rst_thrsh <- 2
+
+  miny <-
+    rstudent %>%
+    min() %>%
+    subtract(3)
+
+  maxy <-
+    rstudent %>%
+    max() %>%
+    add(3)
+
+  minx <- min(leverage)
+  maxx <- ifelse((max(leverage) > lev_thrsh), max(leverage),
+                 (lev_thrsh + 0.05))
+
+  levrstud <-
+    tibble(obs = seq_len(n), leverage, rstudent) %>%
+    mutate(
+      color = case_when(
+        (leverage < lev_thrsh & abs(rstudent) < 2) ~ "normal",
+        (leverage > lev_thrsh & abs(rstudent) < 2) ~ "leverage",
+        (leverage < lev_thrsh & abs(rstudent) > 2) ~ "outlier",
+        TRUE ~ "outlier & leverage"
+      ),
+
+      fct_color = color %>%
+        factor() %>%
+        ordered(
+          levels = c(
+            "normal", "leverage", "outlier",
+            "outlier & leverage"
+          )
+        )
+
+    )
+
+  list(levrstud  = levrstud,
+       lev_thrsh = lev_thrsh,
+       minx      = minx,
+       miny      = miny,
+       maxx      = maxx,
+       maxy      = maxy
+  )
+
+}
+
+#' @export
+#' @rdname ols_plot_resid_lev
+#' @usage NULL
+#'
+ols_rsdlev_plot <- function(model) {
+  .Deprecated("ols_plot_resid_lev()")
 }

@@ -1,29 +1,58 @@
-#' @title Potential Residual Plot
-#' @description Plot to aid in classifying unusual observations as high-leverage points,
+#' Potential residual plot
+#'
+#' @description
+#' Plot to aid in classifying unusual observations as high-leverage points,
 #' outliers, or a combination of both.
-#' @param model an object of class \code{lm}
-#' @references Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
+#'
+#' @param model An object of class \code{lm}.
+#'
+#' @references
+#' Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
+#'
+#' @section Deprecated Function:
+#' \code{ols_potrsd_plot()} has been deprecated. Instead use \code{ols_plot_resid_pot()}.
+#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
-#' ols_potrsd_plot(model)
+#' ols_plot_resid_pot(model)
+#'
+#' @seealso [ols_plot_hadi()]
+#'
 #' @export
 #'
+ols_plot_resid_pot <- function(model) {
+
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
+  }
+
+  res <- NULL
+  pot <- NULL
+
+  d <- tibble(res = hadio(model, 3), pot = hadio(model, 2))
+
+  p <- ggplot(d, aes(x = res, y = pot)) +
+    geom_point(colour = "blue", shape = 1) +
+    xlab("Residual") + ylab("Potential") +
+    ggtitle("Potential-Residual Plot")
+
+  print(p)
+
+}
+
+#' @export
+#' @rdname ols_plot_resid_pot
+#' @usage NULL
+#'
 ols_potrsd_plot <- function(model) {
-
-    if (!all(class(model) == 'lm')) {
-        stop('Please specify a OLS linear regression model.', call. = FALSE)
-    }
-
-    res <- NULL
-    pot <- NULL
-      d <- tibble(res = hadio(model, 3), pot = hadio(model, 2))
-      
-      p <- ggplot(d, aes(x = res, y = pot)) +
-        geom_point(colour = 'blue', shape = 1) +
-        xlab('Residual') + ylab('Potential') +
-        ggtitle('Potential-Residual Plot')
-        
-    print(p)
+  .Deprecated("ols_plot_resid_pot()")
 }
 
 
+hadio <- function(model, n) {
+
+  model %>%
+    ols_hadi() %>%
+    extract2(n)
+
+}

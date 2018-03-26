@@ -1,7 +1,11 @@
-#' @title Residual vs Fitted Plot
-#' @description It is a scatter plot of residuals on the y axis and fitted values on the x axis to 
-#' detect non-linearity, unequal error variances, and outliers.
-#' @param model an object of class \code{lm}
+#' Residual vs fitted plot
+#'
+#' @description
+#' Scatter plot of residuals on the y axis and fitted values on the
+#' x axis to detect non-linearity, unequal error variances, and outliers.
+#'
+#' @param model An object of class \code{lm}.
+#'
 #' @details Characteristics of a well behaved residual vs fitted plot:
 #'
 #' \itemize{
@@ -10,26 +14,51 @@
 #'   \item No one residual is visibly away from the random pattern of the residuals indicating that there are no outliers.
 #' }
 #'
+#' @section Deprecated Function:
+#' \code{ols_rvsp_plot()} has been deprecated. Instead use \code{ols_plot_resid_fit()}.
+#'
+#' @family residual diagnostics
+#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
-#' ols_rvsp_plot(model)
+#' ols_plot_resid_fit(model)
+#'
 #' @export
 #'
-ols_rvsp_plot <- function(model) {
+ols_plot_resid_fit <- function(model) {
 
-	if (!all(class(model) == 'lm')) {
-    stop('Please specify a OLS linear regression model.', call. = FALSE)
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
   }
 
-	predicted <- NULL
-	resid <- NULL
+  predicted <- NULL
+  resid     <- NULL
 
   d <- rvspdata(model)
-	p <- ggplot(d, aes(x = predicted, y = resid))
-	p <- p + geom_point(shape = 1, colour = 'blue')
-	p <- p + xlab('Fitted Value') + ylab('Residual')
-	p <- p + ggtitle('Residual vs Fitted Values')
-	p <- p + geom_hline(yintercept = 0, colour = 'red')
-	print(p)
+
+  p <- ggplot(d, aes(x = predicted, y = resid)) +
+    geom_point(shape = 1, colour = "blue") +
+    xlab("Fitted Value") + ylab("Residual") +
+    ggtitle("Residual vs Fitted Values") +
+    geom_hline(yintercept = 0, colour = "red")
+
+  print(p)
+
+}
+
+#' @export
+#' @rdname ols_plot_resid_fit
+#' @usage NULL
+#'
+ols_rvsp_plot <- function(model) {
+  .Deprecated("ols_plot_resid_fit()")
+}
+
+
+rvspdata <- function(model) {
+
+  resid     <- residuals(model)
+  predicted <- fitted(model)
+  tibble(predicted = predicted, resid = resid)
 
 }

@@ -1,6 +1,6 @@
 #' @importFrom shiny runApp
-#' @title Launch Shiny App
-#' @description Launches shiny app
+#' @title Launch shiny app
+#' @description Launches shiny app for interactive model building.
 #' @examples
 #' \dontrun{
 #' ols_launch_app()
@@ -8,5 +8,5 @@
 #' @export
 #'
 ols_launch_app <- function() {
-    runApp(appDir = system.file("application", package = "olsrr"))
+  runApp(appDir = system.file("application", package = "olsrr"))
 }

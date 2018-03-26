@@ -1,17 +1,16 @@
-#' @importFrom ggplot2 ggtitle scale_shape_manual scale_size_manual scale_color_manual ggtitle geom_text
-#' @importFrom utils combn
-#' @importFrom dplyr group_by summarise_all
-#' @importFrom purrr map_int
-#' @importFrom tidyr nest
-#' @importFrom magrittr add use_series
-#' @title All Possible Regression
-#' @description Fits all regressions involving one regressor, two regressors, three regressors, and so on.
-#' It tests all possible subsets of the set of potential independent variables.
-#' @param model an object of class \code{lm}
-#' @param x an object of class \code{ols_best_subset}
-#' @param ... other arguments
-#' @return \code{ols_all_subset} returns an object of class \code{"ols_all_subset"}.
-#' An object of class \code{"ols_all_subset"} is a data frame containing the
+#' All possible regression
+#'
+#' @description
+#' Fits all regressions involving one regressor, two regressors, three
+#' regressors, and so on. It tests all possible subsets of the set of potential
+#' independent variables.
+#'
+#' @param model An object of class \code{lm}.
+#' @param x An object of class \code{ols_best_subset}.
+#' @param ... Other arguments.
+#'
+#' @return \code{ols_step_all_possible} returns an object of class \code{"ols_step_all_possible"}.
+#' An object of class \code{"ols_step_all_possible"} is a data frame containing the
 #' following components:
 #'
 #' \item{n}{model number}
@@ -28,12 +27,19 @@
 #' \item{pc}{amemiya prediction criteria}
 #' \item{sp}{hocking's Sp}
 #'
-#' @references Mendenhall William and  Sinsich Terry, 2012, A Second Course in Statistics Regression Analysis (7th edition). 
+#' @references
+#' Mendenhall William and  Sinsich Terry, 2012, A Second Course in Statistics Regression Analysis (7th edition).
 #' Prentice Hall
+#'
+#' @section Deprecated Function:
+#' \code{ols_all_subset()} has been deprecated. Instead use \code{ols_step_all_possible()}.
+#'
+#' @family variable selection procedures
+#'
 #' @examples
 #' \dontrun{
 #' model <- lm(mpg ~ disp + hp, data = mtcars)
-#' k <- ols_all_subset(model)
+#' k <- ols_step_all_possible(model)
 #' k
 #' }
 #'
@@ -42,264 +48,296 @@
 #' plot(k)
 #' }
 #'
+#' @importFrom utils combn
+#' @importFrom dplyr group_by summarise_all
+#' @importFrom purrr map_int
+#' @importFrom tidyr nest
+#' @importFrom magrittr add use_series
+#'
 #' @export
 #'
-ols_all_subset <- function(model, ...) UseMethod('ols_all_subset')
+ols_step_all_possible <- function(model, ...) UseMethod("ols_step_all_possible")
 
 #' @export
 #'
-ols_all_subset.default <- function(model, ...) {
+ols_step_all_possible.default <- function(model, ...) {
 
-    if (!all(class(model) == 'lm')) {
-        stop('Please specify a OLS linear regression model.', call. = FALSE)
-    }
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
+  }
 
-    if (length(model$coefficients) < 3) {
-        stop('Please specify a model with at least 2 predictors.', call. = FALSE)
-    }
+  if (length(model$coefficients) < 3) {
+    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
+  }
 
-    # nam   <- colnames(attr(model$terms, 'factors'))
-    # n     <- length(nam)
-    # r     <- seq_len(n)
-    # combs <- list()
+  metrics <- allpos_helper(model)
 
-    # for (i in seq_len(n)) {
-    #     combs[[i]] <- combn(n, r[i])
-    # }
+  ui <- data.frame(
+    n          = metrics$lpreds,
+    predictors = unlist(metrics$preds),
+    rsquare    = unlist(metrics$rsq),
+    adjr       = unlist(metrics$adjrsq),
+    predrsq    = unlist(metrics$predrsq),
+    cp         = unlist(metrics$cp),
+    aic        = unlist(metrics$aic),
+    sbic       = unlist(metrics$sbic),
+    sbc        = unlist(metrics$sbc),
+    msep       = unlist(metrics$msep),
+    fpe        = unlist(metrics$fpe),
+    apc        = unlist(metrics$apc),
+    hsp        = unlist(metrics$hsp),
+    stringsAsFactors = F
+  )
 
-    # lc        <- length(combs)
-    # varnames  <- names(model.frame(model))
-    # predicts  <- nam
-    # len_preds <- length(predicts)
-    # gap       <- len_preds - 1
-    # space     <- sum(nchar(predicts)) + gap
-    # data      <- mod_sel_data(model)
-    # colas     <- combs %>% map_int(ncol)
-    # response  <- varnames[1]
-    # p         <- colas
-    # t         <- cumsum(colas)
-    # q         <- c(1, t[-lc] + 1)
-    
-    metrics <- allpos_helper(model) 
+  sorted <- c()
 
-    ui <- data.frame(n               = metrics$lpreds,
-                    predictors       = unlist(metrics$preds),
-                    rsquare          = unlist(metrics$rsq),
-                    adjr             = unlist(metrics$adjrsq),
-                    predrsq          = unlist(metrics$predrsq),
-                    cp               = unlist(metrics$cp),
-                    aic              = unlist(metrics$aic),
-                    sbic             = unlist(metrics$sbic),
-                    sbc              = unlist(metrics$sbc),
-                    msep             = unlist(metrics$msep),
-                    fpe              = unlist(metrics$fpe),
-                    apc              = unlist(metrics$apc),
-                    hsp              = unlist(metrics$hsp),
-                    stringsAsFactors = F)
+  for (i in seq_len(metrics$lc)) {
+    temp   <- ui[metrics$q[i]:metrics$t[i], ]
+    temp   <- temp[order(temp$rsquare, decreasing = TRUE), ]
+    sorted <- rbind(sorted, temp)
+  }
 
-    sorted <- c()
+  mindex <-
+    sorted %>%
+    nrow() %>%
+    seq_len()
 
-    for (i in seq_len(metrics$lc)) {
-        temp   <- ui[metrics$q[i]:metrics$t[i], ]
-        temp   <- temp[order(temp$rsquare, decreasing = TRUE), ]
-        # temp   <- arrange(temp, desc(rsquare))
-        sorted <- rbind(sorted, temp)
-    }
+  sorted <- cbind(mindex, sorted)
 
-    mindex <- seq_len(nrow(sorted))
-    sorted <- cbind(mindex, sorted)
+  class(sorted) <- c("ols_step_all_possible", "tibble", "data.frame")
 
-    class(sorted) <- c('ols_all_subset', 'tibble', 'data.frame')
+  return(sorted)
+}
 
-    return(sorted)
+
+#' @export
+#' @rdname ols_step_all_possible
+#' @usage NULL
+#'
+ols_all_subset <- function(model, ...) {
+  .Deprecated("ols_step_all_possible()")
 }
 
 
 #' @export
 #'
-print.ols_all_subset <- function(x, ...) {
+print.ols_step_all_possible <- function(x, ...) {
 
-    n <- max(x$mindex)
-    k <- tibble::as_tibble(x)[, c(1:5, 7)]
-    k$rsquare <- format(round(k$rsquare, 5), nsmall = 5)
-    k$adjr <- format(round(k$adjr, 5), nsmall = 5)
-    k$cp <- format(round(k$cp, 5), nsmall = 5)
-    names(k) <- c('Index', 'N', 'Predictors', 'R-Square', 'Adj. R-Square', "Mallow's Cp")
-    print(k)
+  mindex <- NULL
+
+  n <-
+    x %>%
+    use_series(mindex) %>%
+    max()
+
+  k <-
+    x %>%
+    as_tibble() %>%
+    select(c(1:5, 7))
+
+  names(k) <- c("Index", "N", "Predictors", "R-Square", "Adj. R-Square",
+                "Mallow's Cp")
+
+  print(k)
 
 }
 
 #' @export
-#' @rdname ols_all_subset
+#' @rdname ols_step_all_possible
 #'
-plot.ols_all_subset <- function(x, model = NA, ...) {
+plot.ols_step_all_possible <- function(x, model = NA, ...) {
 
-  maxs  <- tapply(x$rsquare, x$n, max)
-  lmaxs <- seq_len(length(maxs))
-  # index <- c()
-
-  # suppressWarnings(
-  #   for (i in lmaxs) {
-  #       index[i] <- which(x$rsquare == maxs[i])
-  #   }
-  # )
-  
-  n <- NULL
+  n       <- NULL
+  y       <- NULL
+  k       <- NULL
+  tx      <- NULL
+  size    <- NULL
+  shape   <- NULL
   rsquare <- NULL
-  index <- c()
+  cp      <- NULL
+  adjr    <- NULL
+  cps     <- NULL
+  aic     <- NULL
+  sbic    <- NULL
+  sbc     <- NULL
 
-  d <- tibble(index = x$mindex, n = x$n, rsquare = x$rsquare)
+  d <-
+    tibble(index = x$mindex, n = x$n, rsquare = x$rsquare, adjr = x$adjr,
+           cp = x$cp, aic = x$aic, sbic = x$sbic, sbc = x$sbc) %>%
+    mutate(cps = abs(n - cp))
 
-  m <- d %>%
-      group_by(n) %>%
-      select(n, rsquare) %>%
-      summarise_all(max) 
+  p1 <- all_possible_plot(d, rsquare, title = "R-Square")
+  p2 <- all_possible_plot(d, adjr, title = "Adj. R-Square")
+  p3 <- all_possible_plot(d, cps, title = "Cp")
+  p4 <- all_possible_plot(d, aic, title = "AIC")
+  p5 <- all_possible_plot(d, sbic, title = "SBIC")
+  p6 <- all_possible_plot(d, sbc, title = "SBC")
 
-  k <- d %>%
-      group_by(n) %>%
-      nest()
+  # grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = "All Possible Regression")
+  myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
+                  plot_4 = p4, plot_5 = p5, plot_6 = p6)
+  result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
+  result
 
-  suppressWarnings(
-      for (i in m$n) {
-          index[i] <- k[[2]][[i]]$index[which(m$rsquare[i] == k[[2]][[i]]$rsquare)]
-      }
-  )
+}
 
-  maxs1  <- tapply(x$adjr, x$n, max)
-  lmaxs1 <- seq_len(length(maxs1))
-  index1 <- c()
+#' All possible regression plot
+#'
+#' Generate plots for best subset regression.
+#'
+#' @importFrom ggplot2 ggtitle scale_shape_manual scale_size_manual scale_color_manual ggtitle geom_text
+#' @importFrom rlang enquo !!
+#'
+#' @param d1 A tibble.
+#' @param d2 A tibble.
+#' @param title Plot title.
+#'
+#' @noRd
+#'
+all_possible_plot <- function(d, var, title = "R-Square") {
 
-  suppressWarnings(
-    for (i in lmaxs1) {
-        index1[i] <- which(x$adjr == maxs1[i])
-    }
-  )
-
-  cps   <- abs(x$n - x$cp)
-  mcps  <- tapply(cps, x$n, min)
-  lmcps <- seq_len(length(mcps))
-  imcps <- c()
-
-  for (i in lmcps) {
-    imcps[i] <- which(cps == mcps[i])
-  }
-
-  maxs2  <- tapply(x$aic, x$n, min)
-  lmaxs2 <- seq_len(length(maxs2))
-  index2 <- c()
-
-  for (i in lmaxs2) {
-    index2[i] <- which(x$aic == maxs2[i])
-  }
-
-  maxs3  <- tapply(x$sbic, x$n, min)
-  lmaxs3 <- seq_len(length(maxs3))
-  index3 <- c()
-
-  for (i in lmaxs3) {
-    index3[i] <- which(x$sbic == maxs3[i])
-  }
-
-  maxs4  <- tapply(x$sbc, x$n, min)
-  lmaxs4 <- seq_len(length(maxs4))
-  index4 <- c()
-
-  for (i in lmaxs4) {
-    index4[i] <- which(x$sbc == maxs4[i])
-  }
-
+  n     <- NULL
+  x     <- NULL
+  y     <- NULL
   shape <- NULL
-  size <- NULL
-  tx <- NULL
-  y <- NULL
-  k <- NULL
+  size  <- NULL
+  tx    <- NULL
 
-  d1 <- data.frame(x = x$n, y = x$rsquare)
-  d2 <- data.frame(x = lmaxs, y = maxs, tx = index, shape = 6, size = 4)
-  p1 <- ggplot(d1, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('') + ylab('') + ggtitle('R-Square') +
+  varr <- enquo(var)
+
+  d1 <-
+    d %>%
+    select(x = n, y = !! varr)
+
+  maxs  <- all_pos_maxs(d, !! varr, title)
+  lmaxs <- all_pos_lmaxs(maxs)
+  index <- all_pos_index(d, !! varr, title)
+
+  d2 <- tibble(x = lmaxs, y = maxs, tx = index, shape = 6, size = 4)
+
+  ggplot(d1, aes(x = x, y = y)) + geom_point(color = "blue", size = 2) +
+    xlab("") + ylab("") + ggtitle(title) +
     geom_point(data = d2, aes(x = x, y = y, shape = factor(shape),
-                              color = factor(shape), size = factor(size))) +
+      color = factor(shape), size = factor(size))) +
     scale_shape_manual(values = c(2), guide = FALSE) +
     scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
+    scale_color_manual(values = c("red"), guide = FALSE) +
     geom_text(data = d2, aes(label = tx), hjust = 0, nudge_x = 0.1)
 
-  d3 <- data.frame(x = x$n, y = x$adjr)
-  d4 <- data.frame(x = lmaxs1, y = maxs1, tx = index1, shape = 6, size = 4)
-  p2 <- ggplot(d3, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('') + ylab('') + ggtitle('Adj R-Square') +
-    geom_point(data = d4, aes(x = x, y = y, shape = factor(shape),
-                              color = factor(shape), size = factor(size))) +
-    scale_shape_manual(values = c(2), guide = FALSE) +
-    scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
-    geom_text(data = d4, aes(label = tx), hjust = 0, nudge_x = 0.1)
+}
 
-  d5 <- data.frame(x = x$n, y = x$cp)
-  d6 <- data.frame(x = lmcps, y = x$cp[imcps], tx = imcps,  shape = 6, size = 4)
-  p3 <- ggplot(d5, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('') + ylab('') + ggtitle('C(p)') +
-    geom_point(data = d6, aes(x = x, y = y, shape = factor(shape),
-                              color = factor(shape), size = factor(size))) +
-    scale_shape_manual(values = c(2), guide = FALSE) +
-    scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
-    geom_text(data = d6, aes(label = tx), hjust = 0, nudge_x = 0.1)
+#' @importFrom dplyr summarise
+all_pos_maxs <- function(d, var, title = "R-Square") {
 
-  d7 <- data.frame(x = x$n, y = x$aic)
-  d8 <- data.frame(x = lmaxs2, y = maxs2, tx = index2, shape = 6, size = 4)
-  p4 <- ggplot(d7, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('') + ylab('') + ggtitle('AIC') +
-    geom_point(data = d8, aes(x = x, y = y, shape = factor(shape),
-                              color = factor(shape), size = factor(size))) +
-    scale_shape_manual(values = c(2), guide = FALSE) +
-    scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
-    geom_text(data = d8, aes(label = tx), hjust = 0, nudge_x = 0.1)
+  n <- NULL
 
-  d9 <- data.frame(x = x$n, y = x$sbic)
-  d10 <- data.frame(x = lmaxs3, y = maxs3, tx = index3, shape = 6, size = 4)
-  p5 <- ggplot(d9, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('Number of Predictors') + ylab('') + ggtitle('SBIC') +
-    geom_point(data = d10, aes(x = x, y = y, shape = factor(shape),
-                               color = factor(shape), size = factor(size))) +
-    scale_shape_manual(values = c(2), guide = FALSE) +
-    scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
-    geom_text(data = d10, aes(label = tx), hjust = 0, nudge_x = 0.1)
+  varr <- enquo(var)
 
-  d11 <- data.frame(x = x$n, y = x$sbc)
-  d12 <- data.frame(x = lmaxs4, y = maxs4, tx = index4, shape = 6, size = 4)
-  p6 <- ggplot(d11, aes(x = x, y = y)) +
-    geom_point(color = 'blue', size = 2) +
-    xlab('Number of Predictors') + ylab('') + ggtitle('SBC') +
-    geom_point(data = d12, aes(x = x, y = y, shape = factor(shape),
-                               color = factor(shape), size = factor(size))) +
-    scale_shape_manual(values = c(2), guide = FALSE) +
-    scale_size_manual(values = c(4), guide = FALSE) +
-    scale_color_manual(values = c('red'), guide = FALSE) +
-    geom_text(data = d12, aes(label = tx), hjust = 0, nudge_x = 0.1)
+  if (title == "R-Square" | title == "Adj. R-Square") {
+    d %>%
+      select(!! varr, n) %>%
+      group_by(n) %>%
+      summarise(max(!! varr)) %>%
+      pull(2)
+  } else {
+    d %>%
+      select(!! varr, n) %>%
+      group_by(n) %>%
+      summarise(min(!! varr)) %>%
+      pull(2)
+  }
 
-  grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = 'All Subset Regression')
+}
 
-  result <- list(rsquare_plot = p1, adj_rsquare_plot = p2, mallows_cp_plot = p3,
-                aic_plot = p4, sbic_plot = p5, sbc_plot = p6)
-  invisible(result)
+all_pos_lmaxs <- function(maxs) {
+
+  maxs %>%
+    length() %>%
+    seq_len()
+
+}
+
+all_pos_index <- function(d, var, title = "R-Square") {
+
+  n     <- NULL
+  varr  <- enquo(var)
+  index <- c()
+
+  if (title == "R-Square" | title == "Adj. R-Square") {
+    m <-
+      d %>%
+      group_by(n) %>%
+      select(n, !! varr) %>%
+      summarise_all(max)
+  } else {
+    m <-
+      d %>%
+      group_by(n) %>%
+      select(n, !! varr) %>%
+      summarise_all(min)
+  }
+
+  k <-
+    d %>%
+    group_by(n) %>%
+    nest()
+
+  for (i in m$n) {
+
+    j <- which(part_2(m, !! varr, i) == part_3(k, !! varr, i))
+
+    index[i] <-
+      part_1(k, i) %>%
+      extract(j)
+
+  }
+
+  return(index)
 
 }
 
 
-#' @title All Possible Regression Variable Coefficients
-#' @description Returns the coefficients for each variable from each model
-#' @param object an object of class \code{lm}
-#' @param ... other arguments
-#' @return \code{ols_all_subset_betas} returns a tibble containing 
+part_1 <- function(k, i) {
+
+  index <- NULL
+
+  k %>%
+    extract2(2) %>%
+    extract2(i) %>%
+    use_series(index)
+
+}
+
+part_2 <- function(m, var, i) {
+
+  varr <- enquo(var)
+
+  m %>%
+    pull(!! varr) %>%
+    extract(i)
+
+}
+
+part_3 <- function(k, var, i) {
+
+  varr <- enquo(var)
+
+  k %>%
+    extract2(2) %>%
+    extract2(i) %>%
+    pull(!! varr)
+
+}
+
+
+#' All possible regression variable coefficients
+#'
+#' Returns the coefficients for each variable from each model.
+#'
+#' @param object An object of class \code{lm}.
+#' @param ... Other arguments.
+#'
+#' @return \code{ols_step_all_possible_betas} returns a tibble containing:
 #'
 #' \item{model_index}{model number}
 #' \item{predictor}{predictor}
@@ -308,19 +346,19 @@ plot.ols_all_subset <- function(x, model = NA, ...) {
 #' @examples
 #' \dontrun{
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
-#' ols_all_subset_betas(model)
+#' ols_step_all_possible_betas(model)
 #' }
 #'
 #' @export
 #'
-ols_all_subset_betas <- function(object, ...) {
+ols_step_all_possible_betas <- function(object, ...) {
 
-  if (!all(class(object) == 'lm')) {
-    stop('Please specify a OLS linear regression model.', call. = FALSE)
+  if (!all(class(object) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
   }
 
   if (length(object$coefficients) < 3) {
-    stop('Please specify a model with at least 2 predictors.', call. = FALSE)
+    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
   }
 
   betas  <- NULL
@@ -328,29 +366,183 @@ ols_all_subset_betas <- function(object, ...) {
   lpreds <- NULL
 
   metrics <- allpos_helper(object)
-  
-  beta_names <- metrics %>%
+
+  beta_names <-
+    metrics %>%
     use_series(betas) %>%
     names()
-  
-  mindex <- metrics %>%
+
+  mindex <-
+    metrics %>%
     use_series(rsq) %>%
     length() %>%
     seq_len()
-  
-  reps <- metrics %>%
+
+  reps <-
+    metrics %>%
     use_series(lpreds) %>%
     add(1)
 
-  m_index <- mindex %>%
+  m_index <-
+    mindex %>%
     rep(reps)
 
-  beta <- metrics %>%
-  use_series(betas)
+  beta <-
+    metrics %>%
+    use_series(betas)
 
-  model_betas <- tibble(model = m_index, 
-    predictor = beta_names, beta = beta)
+  tibble(
+    model = m_index,
+    predictor = beta_names,
+    beta = beta
+  )
 
-  return(model_betas)
-  
+}
+
+#' @export
+#' @rdname ols_step_all_possible_betas
+#' @usage NULL
+#'
+ols_all_subset_betas <- function(model, ...) {
+  .Deprecated("ols_step_all_possible_betas()")
+}
+
+
+#' All possible regression internal
+#'
+#' Internal function for all possible regression.
+#'
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+allpos_helper <- function(model) {
+
+  nam   <- coeff_names(model)
+  n     <- length(nam)
+  r     <- seq_len(n)
+  combs <- list()
+
+  for (i in seq_len(n)) {
+    combs[[i]] <- combn(n, r[i])
+  }
+
+  predicts  <- nam
+  lc        <- length(combs)
+  varnames  <- model_colnames(model)
+  len_preds <- length(predicts)
+  gap       <- len_preds - 1
+  data      <- mod_sel_data(model)
+  space     <- coeff_length(predicts, gap)
+  colas     <- map_int(combs, ncol)
+  response  <- varnames[1]
+  p         <- colas
+  t         <- cumsum(colas)
+  q         <- c(1, t[-lc] + 1)
+
+  mcount    <- 0
+  rsq       <- list()
+  adjrsq    <- list()
+  predrsq   <- list()
+  cp        <- list()
+  aic       <- list()
+  sbic      <- list()
+  sbc       <- list()
+  msep      <- list()
+  fpe       <- list()
+  apc       <- list()
+  hsp       <- list()
+  preds     <- list()
+  lpreds    <- c()
+  betas     <- c()
+
+  for (i in seq_len(lc)) {
+    for (j in seq_len(colas[i])) {
+
+      predictors <- nam[combs[[i]][, j]]
+      lp         <- length(predictors)
+
+      out <- ols_regress(paste(response, "~",
+                               paste(predictors, collapse = " + ")),
+                         data = data)
+
+      mcount            <- mcount + 1
+      lpreds[mcount]    <- lp
+      rsq[[mcount]]     <- out$rsq
+      adjrsq[[mcount]]  <- out$adjr
+      predrsq[[mcount]] <- ols_pred_rsq(out$model)
+      cp[[mcount]]      <- ols_mallows_cp(out$model, model)
+      aic[[mcount]]     <- ols_aic(out$model)
+      sbic[[mcount]]    <- ols_sbic(out$model, model)
+      sbc[[mcount]]     <- ols_sbc(out$model)
+      msep[[mcount]]    <- ols_msep(out$model)
+      fpe[[mcount]]     <- ols_fpe(out$model)
+      apc[[mcount]]     <- ols_apc(out$model)
+      hsp[[mcount]]     <- ols_hsp(out$model)
+      preds[[mcount]]   <- paste(predictors, collapse = " ")
+      betas             <- append(betas, out$betas)
+    }
+  }
+
+  result <- list(
+    lpreds = lpreds, rsq = rsq, adjrsq = adjrsq,
+    predrsq = predrsq, cp = cp, aic = aic, sbic = sbic,
+    sbc = sbc, msep = msep, fpe = fpe, apc = apc, hsp = hsp,
+    preds = preds, lc = lc, q = q, t = t, betas = betas
+  )
+
+  return(result)
+}
+
+#' Coefficient names
+#'
+#' Returns the names of the coefficients including interaction variables.
+#'
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+coeff_names <- function(model) {
+
+  terms <- NULL
+
+  model %>%
+    use_series(terms) %>%
+    attr(which = "factors") %>%
+    colnames()
+
+}
+
+#' Model data columns
+#'
+#' Returns the names of the columns in the data used in the model.
+#'
+#' @param model An object of class \cdoe{lm}.
+#'
+#' @noRd
+#'
+model_colnames <- function(model) {
+
+  model %>%
+    model.frame() %>%
+    names()
+
+}
+
+#' Coefficients length
+#'
+#' Returns the length of the coefficient names.
+#'
+#' @param predicts Name of the predictors in the model.
+#' @param gap A numeric vector.
+#'
+#' @noRd
+#'
+coeff_length <- function(predicts, gap) {
+
+  predicts %>%
+    nchar() %>%
+    sum() %>%
+    add(gap)
+
 }

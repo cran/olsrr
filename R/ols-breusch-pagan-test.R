@@ -1,18 +1,24 @@
-#' @importFrom stats anova
-#' @title Breusch Pagan Test
-#' @description Test for constant variance. It assumes that the error terms are normally distributed.
-#' @param model an object of class \code{lm}
-#' @param fitted.values logical; if TRUE, use fitted values of regression model
-#' @param rhs logical; if TRUE, specifies that tests for heteroskedasticity be
+#' Breusch pagan test
+#'
+#' @description
+#' Test for constant variance. It assumes that the error terms are normally
+#' distributed.
+#'
+#' @param model An object of class \code{lm}.
+#' @param fitted.values Logical; if TRUE, use fitted values of regression model.
+#' @param rhs Logical; if TRUE, specifies that tests for heteroskedasticity be
 #' performed for the right-hand-side (explanatory) variables of the fitted
-#' regression model
-#' @param multiple logical; if TRUE, specifies that multiple testing be performed
-#' @param p.adj p value adjustment, following options are available: bonferroni,
-#' holm, sidak and none
-#' @param vars variables to be used for for heteroskedasticity test
-#' @details Breusch Pagan Test was introduced by Trevor Breusch and Adrian Pagan in 1979. It is used to
-#' test for heteroskedasticity in a linear regression model. It test whether variance of errors from a 
-#' regression is dependent on the values of a independent variable. 
+#' regression model.
+#' @param multiple Logical; if TRUE, specifies that multiple testing be performed.
+#' @param p.adj Adjustment for p value, the following options are available:
+#' bonferroni, holm, sidak and none.
+#' @param vars Variables to be used for heteroskedasticity test.
+#'
+#' @details
+#' Breusch Pagan Test was introduced by Trevor Breusch and Adrian Pagan in 1979.
+#' It is used to test for heteroskedasticity in a linear regression model.
+#' It test whether variance of errors from a regression is dependent on the
+#' values of a independent variable.
 #'
 #' \itemize{
 #' \item Null Hypothesis: Equal/constant variances
@@ -24,13 +30,13 @@
 #' \itemize{
 #'   \item Fit a regression model
 #'   \item Regress the squared residuals from the above model on the independent variables
-#'   \item Compute \eqn{nR^2}. It follows a chi square distribution with p -1 degrees of 
+#'   \item Compute \eqn{nR^2}. It follows a chi square distribution with p -1 degrees of
 #'         freedom, where p is the number of independent variables, n is the sample size and
-#'				 \eqn{R^2} is the coefficient of determination from the regression in step 2.
+#' 				 \eqn{R^2} is the coefficient of determination from the regression in step 2.
 #' }
 #'
-#' @return \code{ols_bp_test} returns an object of class \code{"ols_bp_test"}.
-#' An object of class \code{"ols_bp_test"} is a list containing the
+#' @return \code{ols_test_breusch_pagan} returns an object of class \code{"ols_test_breusch_pagan"}.
+#' An object of class \code{"ols_test_breusch_pagan"} is a list containing the
 #' following components:
 #'
 #' \item{bp}{breusch pagan statistic}
@@ -42,357 +48,506 @@
 #' \item{vars}{variables to be used for heteroskedasticity test}
 #' \item{resp}{response variable}
 #' \item{preds}{predictors}
-#' @references T.S. Breusch & A.R. Pagan (1979), A Simple Test for Heteroscedasticity and 
+#'
+#' @references
+#' T.S. Breusch & A.R. Pagan (1979), A Simple Test for Heteroscedasticity and
 #' Random Coefficient Variation. Econometrica 47, 1287–1294
 #'
 #' Cook, R. D.; Weisberg, S. (1983). "Diagnostics for Heteroskedasticity in Regression". Biometrika. 70 (1): 1–10.
+#'
+#' @section Deprecated Function:
+#' \code{ols_bp_test()} has been deprecated. Instead use \code{ols_test_breusch_pagan()}.
+#'
+#' @family heteroskedasticity tests
+#'
 #' @examples
 #' # model
 #' model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
-#' 
-#' # Use fitted values of the model
-#' ols_bp_test(model)
-#' 
-#' # Use independent variables of the model
-#' ols_bp_test(model, rhs = TRUE)
-#' 
-#' # Use independent variables of the model and perform multiple tests
-#' ols_bp_test(model, rhs = TRUE, multiple = TRUE)
-#' 
-#' # Bonferroni p value Adjustment
-#' ols_bp_test(model, rhs = TRUE, multiple = TRUE, p.adj = 'bonferroni')
-#' 
-#' # Sidak p value Adjustment
-#' ols_bp_test(model, rhs = TRUE, multiple = TRUE, p.adj = 'sidak')
-#' 
-#' # Holm's p value Adjustment
-#' ols_bp_test(model, rhs = TRUE, multiple = TRUE, p.adj = 'holm')
+#'
+#' # use fitted values of the model
+#' ols_test_breusch_pagan(model)
+#'
+#' # use independent variables of the model
+#' ols_test_breusch_pagan(model, rhs = TRUE)
+#'
+#' # use independent variables of the model and perform multiple tests
+#' ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE)
+#'
+#' # bonferroni p value adjustment
+#' ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'bonferroni')
+#'
+#' # sidak p value adjustment
+#' ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'sidak')
+#'
+#' # holm's p value adjustment
+#' ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'holm')
+#'
+#' @importFrom stats anova
 #'
 #' @export
 #'
-ols_bp_test <- function(model, fitted.values = TRUE, rhs = FALSE, multiple = FALSE,
-	p.adj = c("none", "bonferroni", "sidak", "holm"), vars = NA) UseMethod('ols_bp_test')
+ols_test_breusch_pagan <- function(model, fitted.values = TRUE, rhs = FALSE, multiple = FALSE,
+                        p.adj = c("none", "bonferroni", "sidak", "holm"), vars = NA) UseMethod("ols_test_breusch_pagan")
 
 #' @export
 #'
-ols_bp_test.default <- function(model, fitted.values = TRUE, rhs = FALSE, multiple = FALSE,
-	p.adj = c("none", "bonferroni", "sidak", "holm"), vars = NA) {
+ols_test_breusch_pagan.default <- function(model, fitted.values = TRUE, rhs = FALSE, multiple = FALSE,
+                                p.adj = c("none", "bonferroni", "sidak", "holm"), vars = NA) {
 
-    if (!all(class(model) == 'lm')) {
-        stop('Please specify a OLS linear regression model.', call. = FALSE)
+  if (!all(class(model) == "lm")) {
+    stop("Please specify a OLS linear regression model.", call. = FALSE)
+  }
+
+  if (!is.logical(fitted.values)) {
+    stop("fitted.values must be either TRUE or FALSE")
+  }
+
+  if (!is.logical(rhs)) {
+    stop("rhs must be either TRUE or FALSE")
+  }
+
+  if (!is.logical(multiple)) {
+    stop("multiple must be either TRUE or FALSE")
+  }
+
+  suppressWarnings(
+    if (!is.na(vars[1])) {
+      if (!all(vars %in% names(model$coefficients))) {
+        stop("vars must be a subset of the predictors in the model")
+      }
+
+      fitted.values <- FALSE
     }
+  )
 
-    if (!is.logical(fitted.values)) {
-    	stop('fitted.values must be either TRUE or FALSE')
+  method <- match.arg(p.adj)
+  l      <- avplots_data(model)
+  n      <- nrow(l)
+
+  response <-
+    l %>%
+    names() %>%
+    extract(1)
+
+  predictors <-
+    l %>%
+    names() %>%
+    extract(-1)
+
+  if (fitted.values) {
+    vars <- NA
+
+    if (rhs) {
+      if (multiple) {
+
+        start <- bp_case_one(l, model)
+        loops <- bp_case_loop(start$np, start$nam, start$l)
+        inter <- bp_case_inter(start$l, start$np, loops$tstat)
+        bp    <- inter$bp
+        p     <- bp_case_adj(method, loops$pvals, start$np, inter$ps)
+
+      } else {
+        result <- bp_case_2(l, model)
+        bp     <- result$bp
+        p      <- pchisq(bp, df = result$df, lower.tail = FALSE)
+      }
+    } else {
+      bp <- bp_case_3(model)
+      p  <- pchisq(bp, df = 1, lower.tail = FALSE)
     }
+  } else {
+    if (multiple) {
+      if (rhs) {
+        start <- bp_case_one(l, model)
+        loops <- bp_case_loop(start$np, start$nam, start$l)
+        inter <- bp_case_inter(start$l, start$np, loops$tstat)
+        bp    <- inter$bp
+        p     <- bp_case_adj(method, loops$pvals, start$np, inter$ps)
 
-    if (!is.logical(rhs)) {
-    	stop('rhs must be either TRUE or FALSE')
+      } else {
+        len_vars <- length(vars)
+
+        if (len_vars > 1) {
+          start   <- bp_case_one(l, model)
+          len_var <- length(vars)
+          loops   <- bp_case_loop(len_var, vars, start$l)
+          inter   <- bp_case_5_inter(l, model, vars, loops$tstat)
+          bp      <- inter$bp
+          p       <- bp_case_adj(method, loops$pvals, inter$np, inter$ps)
+        } else {
+          result <- bp_case_7(l, model, vars)
+          bp     <- result$bp
+          p      <- pchisq(bp, df = result$df, lower.tail = FALSE)
+        }
+      }
+    } else {
+      if (rhs) {
+        result <- bp_case_6(l, model)
+        bp     <- result$bp
+        p      <- pchisq(bp, df = result$df, lower.tail = FALSE)
+      } else {
+        result <- bp_case_7(l, model, vars)
+        bp     <- result$bp
+        p      <- pchisq(bp, df = result$df, lower.tail = FALSE)
+      }
     }
-
-    if (!is.logical(multiple)) {
-    	stop('multiple must be either TRUE or FALSE')
-    }
-
-    suppressWarnings(
-    	if (!is.na(vars)) {
-
-    		if (!all(vars %in% names(model$coefficients))) {
-    			stop('vars must be a subset of the predictors in the model')
-    		}
-
-	    	fitted.values <- FALSE
-	    }
-    )
-
-        method <- match.arg(p.adj)
-    # l          <- model.frame(model)
-            m1 <- tibble::as_data_frame(model.frame(model))
-	          m2 <- tibble::as_data_frame(model.matrix(model)[, c(-1)])
-	           l <- tibble::as_data_frame(cbind(m1[, c(1)], m2))
-             n <- nrow(l)
-      response <- names(l)[1]
-    predictors <- names(l)[-1]
-
-	if (fitted.values) {
-
-		vars <- NA
-
-		if (rhs) {
-
-			if (multiple) {
-
-					n         <- nrow(l)
-					nam       <- names(l)[-1]
-					np        <- length(nam)
-					var_resid <- sum(residuals(model) ^ 2) / n
-					ind       <- residuals(model) ^ 2 / var_resid - 1
-					l         <- cbind(l, ind)
-					tstat     <- c()
-					pvals     <- c()
-
-					for (i in seq_len(np)) {
-
-					    form     <- as.formula(paste("ind ~", nam[i]))
-					    model1   <- lm(form, data = l)
-					    tstat[i] <- sum(model1$fitted ^ 2) / 2
-					    pvals[i] <- pchisq(tstat[i], df = 1, lower.tail = F)
-
-					}
-
-					mdata  <- l[-1]
-					models <- lm(ind ~ ., data = mdata)
-					bp     <- sum(models$fitted ^ 2) / 2
-					ps     <- pchisq(bp, df = np, lower.tail = F)
-					bp     <- c(tstat, bp)
-
-
-				if (method == "bonferroni") {
-
-					bpvals <- pmin(1, pvals * np)
-					p      <- c(bpvals, ps)
-
-
-				} else if (method == "sidak") {
-
-					spvals <- pmin(1, 1 - (1 - pvals) ^ np)
-					p      <- c(spvals, ps)
-
-				} else if (method == "holm") {
-
-					j      <- rev(seq_len(length(pvals)))
-					k      <- order(pvals)
-					h      <- order(k)
-					pholms <- pmin(1, sort(pvals) * j)[h]
-					p      <- c(pholms, ps)
-
-				} else {
-
-					p      <- c(pvals, ps)
-
-				}
-
-			} else {
-
-				n         <- nrow(model.frame(model))
-				var_resid <- sum(residuals(model) ^ 2) / n
-				ind       <- residuals(model) ^ 2 / var_resid - 1
-				mdata     <- l[-1]
-				d_f       <- ncol(mdata)
-				model1    <- lm(ind ~ ., data = mdata)
-				bp        <- sum(model1$fitted ^ 2) / 2
-				p         <- pchisq(bp, df = d_f, lower.tail = F)
-
-			}
-
-
-		} else {
-
-			pred         <- model$fitted.values
-			resid        <- model$residuals ^ 2
-			avg_resid    <- sum(resid) / n
-			scaled_resid <- resid / avg_resid
-			model1       <- lm(scaled_resid ~ pred)
-			bp           <- anova(model1)$`Sum Sq`[1] / 2
-			p            <- pchisq(bp, df = 1, lower.tail = F)
-
-		}
-
-	} else {
-
-		if (multiple) {
-
-			if (rhs) {
-
-					n         <- nrow(l)
-					nam       <- names(l)[-1]
-					np        <- length(nam)
-					var_resid <- sum(residuals(model) ^ 2) / n
-					ind       <- residuals(model) ^ 2 / var_resid - 1
-					l         <- cbind(l, ind)
-					tstat     <- c()
-					pvals     <- c()
-
-					for (i in seq_len(np)) {
-
-					    form     <- as.formula(paste("ind ~", nam[i]))
-					    model1   <- lm(form, data = l)
-					    tstat[i] <- sum(model1$fitted ^ 2) / 2
-					    pvals[i] <- pchisq(tstat[i], df = 1, lower.tail = F)
-
-					}
-
-					mdata  <- l[-1]
-					models <- lm(ind ~ ., data = mdata)
-					bp     <- sum(models$fitted ^ 2) / 2
-					ps     <- pchisq(bp, df = np, lower.tail = F)
-					bp     <- c(tstat, bp)
-
-				if (method == "bonferroni") {
-
-					bpvals <- pmin(1, pvals * np)
-					p      <- c(bpvals, ps)
-
-
-				} else if (method == "sidak") {
-
-					spvals <- pmin(1, 1 - (1 - pvals) ^ np)
-					p      <- c(spvals, ps)
-
-				} else if (method == "holm") {
-
-					j      <- rev(seq_len(length(pvals)))
-					k      <- order(pvals)
-					h      <- order(k)
-					pholms <- pmin(1, sort(pvals) * j)[h]
-					p      <- c(pholms, ps)
-
-				} else {
-
-					p      <- c(pvals, ps)
-
-				}
-
-
-			} else {
-
-				len_vars <- length(vars)
-
-				if (len_vars > 1) {
-
-					n         <- nrow(l)
-					nam       <- names(l)[-1]
-					np        <- length(nam)
-					var_resid <- sum(residuals(model) ^ 2) / n
-					ind       <- residuals(model) ^ 2 / var_resid - 1
-					l         <- cbind(l, ind)
-					len_var   <- length(vars)
-					tstat     <- c()
-					pvals     <- c()
-
-					for (i in seq_len(len_var)) {
-
-					    form     <- as.formula(paste("ind ~", vars[i]))
-					    model1   <- lm(form, data = l)
-					    tstat[i] <- sum(model1$fitted ^ 2) / 2
-					    pvals[i] <- pchisq(tstat[i], df = 1, lower.tail = F)
-
-					}
-
-					# simultaneous
-					mdata  <- l[-1]
-					dl     <- mdata[, vars]
-					dk     <- as.data.frame(cbind(ind, dl))
-					np     <- ncol(dk) - 1
-					models <- lm(ind ~ ., data = dk)
-					bp     <- sum(models$fitted ^ 2) / 2
-					ps     <- pchisq(bp, df = np, lower.tail = F)
-					bp     <- c(tstat, bp)
-
-					if (method == "bonferroni") {
-
-						bpvals <- pmin(1, pvals * np)
-						p      <- c(bpvals, ps)
-
-
-					} else if (method == "sidak") {
-
-						spvals <- pmin(1, 1 - (1 - pvals) ^ np)
-						p      <- c(spvals, ps)
-
-					} else if (method == "holm") {
-
-						j      <- rev(seq_len(length(pvals)))
-						k      <- order(pvals)
-						h      <- order(k)
-						pholms <- pmin(1, sort(pvals) * j)[h]
-						p      <- c(pholms, ps)
-
-					} else {
-
-						p      <- c(pvals, ps)
-
-					}
-
-				} else {
-
-					n         <- nrow(l)
-					nam       <- names(l)[-1]
-					np        <- length(nam)
-					var_resid <- sum(residuals(model) ^ 2) / n
-					ind       <- residuals(model) ^ 2 / var_resid - 1
-					l         <- cbind(l, ind)
-					mdata     <- l[-1]
-					dl        <- mdata[, vars]
-					dk        <- as.data.frame(cbind(ind, dl))
-					nd        <- ncol(dk) - 1
-					models    <- lm(ind ~ ., data = dk)
-					bp        <- sum(models$fitted ^ 2) / 2
-					p         <- pchisq(bp, df = nd, lower.tail = F)
-
-				}
-
-			}
-
-		} else {
-
-			if (rhs) {
-
-				n         <- nrow(l)
-				nam       <- names(l)[-1]
-				np        <- length(nam)
-				var_resid <- sum(residuals(model) ^ 2) / n
-				ind       <- residuals(model) ^ 2 / var_resid - 1
-				l         <- cbind(l, ind)
-				mdata     <- l[-1]
-				models    <- lm(ind ~ ., data = mdata)
-				bp        <- sum(models$fitted ^ 2) / 2
-				p         <- pchisq(bp, df = np, lower.tail = F)
-
-
-			} else {
-
-				n         <- nrow(l)
-				nam       <- names(l)[-1]
-				np        <- length(nam)
-				var_resid <- sum(residuals(model) ^ 2) / n
-				ind       <- residuals(model) ^ 2 / var_resid - 1
-				l         <- cbind(l, ind)
-				mdata     <- l[-1]
-				dl        <- mdata[, vars]
-				dk        <- as.data.frame(cbind(ind, dl))
-				nd        <- ncol(dk) - 1
-				models    <- lm(ind ~ ., data = dk)
-				bp        <- sum(models$fitted ^ 2) / 2
-				p         <- pchisq(bp, df = nd, lower.tail = F)
-
-
-			}
-
-		}
-
-
-	}
-
-	# output
-	out <- list(bp       = bp,
-		          p        = p,
-		          fv       = fitted.values,
-		          rhs      = rhs,
-		          multiple = multiple,
-							padj     = method,
-							vars     = vars,
-							resp     = response,
-							preds    = predictors)
-
-	class(out) <- 'ols_bp_test'
-
-	return(out)
-
+  }
+
+  out <- list(
+    bp       = bp,
+    p        = p,
+    fv       = fitted.values,
+    rhs      = rhs,
+    multiple = multiple,
+    padj     = method,
+    vars     = vars,
+    resp     = response,
+    preds    = predictors
+  )
+
+  class(out) <- "ols_test_breusch_pagan"
+
+  return(out)
 }
 
 #' @export
+#' @rdname ols_test_breusch_pagan
+#' @usage NULL
 #'
-print.ols_bp_test <- function(x, ...) {
-	print_bp_test(x)
+ols_bp_test <- function(model, fitted.values = TRUE, rhs = FALSE, multiple = FALSE,
+                        p.adj = c("none", "bonferroni", "sidak", "holm"), vars = NA) {
+  .Deprecated("ols_test_breusch_pagan()")
+}
+
+
+#' @export
+#'
+print.ols_test_breusch_pagan <- function(x, ...) {
+  print_bp_test(x)
+}
+
+#' @description
+#' Computes breusch pagan statistics and degrees of freedom when:
+#' * fit = TRUE
+#' * rhs = TRUE
+#' * multiple = TRUE
+#'
+#' @param l A tibble created using `avplots_data()`.
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+bp_case_2 <- function(l, model) {
+
+  n         <- model_rows(model)
+  var_resid <- residual_var(model, n)
+  ind       <- ind_bp(model, var_resid)
+
+  df <-
+    l %>%
+    select(-1) %>%
+    ncol()
+
+  l %<>%
+    select(-1) %>%
+    bind_cols(ind)
+
+  bp <- bp_model(l)
+
+  list(bp = bp, df = df)
+
+}
+
+#' @description
+#' Computes breusch pagan statistics and degrees of freedom when:
+#' * fit = TRUE
+#' * rhs = FALSE
+#'
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+bp_case_3 <- function(model) {
+
+  `Sum Sq`     <- NULL
+  pred         <- fitted(model)
+  scaled_resid <- resid_scaled(model, pred)
+
+  lm(scaled_resid ~ pred) %>%
+    anova() %>%
+    use_series(`Sum Sq`) %>%
+    extract(1) %>%
+    divide_by(2)
+
+}
+
+#' @description
+#' Computes breusch pagan statistics and degrees of freedom when:
+#' * fit = FALSE
+#' * rhs = TRUE
+#' * multiple = FALSE
+#'
+#' @param l A tibble created using `avplots_data()`.
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+bp_case_6 <- function(l, model) {
+
+  n         <- nrow(l)
+  var_resid <- residual_var(model, n)
+  ind       <- ind_bp(model, var_resid)
+
+  np <-
+    l %>%
+    names() %>%
+    extract(-1) %>%
+    length()
+
+  bp <-
+    l %>%
+    bind_cols(ind) %>%
+    select(-1) %>%
+    bp_model()
+
+  list(bp = bp, df = np)
+
+}
+
+#' @description
+#' Computes breusch pagan statistics and degrees of freedom when:
+#' * fit = FALSE
+#' * rhs = FALSE
+#' * multiple = FALSE
+#'
+#' @importFrom rlang !!! syms
+#'
+#' @param l A tibble created using `avplots_data()`.
+#' @param model An object of class \code{lm}.
+#' @param vars Variables to be used for the test.
+#'
+#' @noRd
+#'
+bp_case_7 <- function(l, model, vars) {
+
+  n         <- nrow(l)
+  var_resid <- residual_var(model, n)
+  ind       <- ind_bp(model, var_resid)
+
+  l %<>%
+    select(!!! syms(vars)) %>%
+    bind_cols(ind)
+
+  bp <- bp_model(l)
+
+  nd <-
+    l %>%
+    ncol() %>%
+    subtract(1)
+
+  list(bp = bp, df = nd)
+
+}
+
+#' @description Fit model using the columns in the data set.
+#'
+#' @param l A tibble created using `avplots_data()`.
+#'
+#' @noRd
+#'
+bp_model <- function(l) {
+
+  l %>%
+    lm(ind ~ ., data = .) %>%
+    bp_fit()
+
+}
+
+bp_fit <- function(l) {
+
+  l %>%
+    fitted() %>%
+    raise_to_power(2) %>%
+    sum() %>%
+    divide_by(2)
+
+}
+
+ind_bp <- function(model, var_resid) {
+
+  model %>%
+    residuals() %>%
+    raise_to_power(2) %>%
+    divide_by(var_resid) %>%
+    subtract(1) %>%
+    tibble() %>%
+    set_colnames("ind")
+
+}
+
+#' @description
+#' Computes breusch pagan statistics and degrees of freedom when:
+#' * fit = TRUE
+#' * rhs = TRUE
+#' * multiple = TRUE
+#'
+#' @param l A tibble created using `avplots_data()`.
+#' @param model An object of class \code{lm}.
+#'
+#' @noRd
+#'
+bp_case_one <- function(l, model) {
+
+  nam <-
+    l %>%
+    names() %>%
+    extract(-1)
+
+  np        <- length(nam)
+  n         <- nrow(l)
+  var_resid <- residual_var(model, n)
+  ind       <- ind_bp(model, var_resid)
+
+  l %<>%
+    bind_cols(ind)
+
+  list(np = np, nam = nam, l = l)
+
+}
+
+#' @description
+#' Computes breusch pagan statistic and p values when multiple = TRUE
+#'
+#' @noRd
+#'
+bp_case_loop <- function(np, nam, l) {
+
+  tstat <- c()
+  pvals <- c()
+
+  for (i in seq_len(np)) {
+
+    form <- as.formula(paste("ind ~", nam[i]))
+
+    tstat[i] <-
+      l %>%
+      lm(form, data = .) %>%
+      bp_fit()
+
+    pvals[i] <- pchisq(tstat[i], df = 1, lower.tail = FALSE)
+
+  }
+
+  list(tstat = tstat, pvals = pvals)
+
+}
+
+#' @description
+#' Computes breusch pagan statistic and p values when multiple = FALSE.
+#'
+#' @noRd
+#'
+bp_case_inter <- function(l, np, tstat) {
+
+  comp <-
+    l %>%
+    select(-1) %>%
+    lm(ind ~ ., data = .) %>%
+    bp_fit()
+
+  ps <- pchisq(comp, df = np, lower.tail = FALSE)
+
+  bp <-
+    comp %>%
+    prepend(tstat)
+
+  list(bp = bp, ps = ps)
+
+}
+
+#' @description Computes adjusted p values.
+#'
+#' @noRd
+#'
+bp_case_adj <- function(method, pvals, np, ps) {
+
+  if (method == "bonferroni") {
+
+    bpvals <- pmin(1, pvals * np)
+    p      <- c(bpvals, ps)
+
+  } else if (method == "sidak") {
+
+    spvals <- pmin(1, 1 - (1 - pvals) ^ np)
+    p      <- c(spvals, ps)
+
+  } else if (method == "holm") {
+
+    j <-
+      pvals %>%
+      length() %>%
+      seq_len() %>%
+      rev()
+
+    h <-
+      pvals %>%
+      order() %>%
+      order()
+
+    pvals_sort <-
+      pvals %>%
+      sort() %>%
+      multiply_by(j)
+
+    pholms <-
+      pmin(1, pvals_sort) %>%
+      extract(h)
+
+    p <- c(pholms, ps)
+
+  } else {
+
+    p <- c(pvals, ps)
+
+  }
+
+  return(p)
+
+}
+
+#' @description Computes breusch pagan statistic and p values when:
+#' * fit = FALSE
+#' * rhs = FALSE
+#' * multiple = FALSE
+#'
+#' @noRd
+#'
+bp_case_5_inter <- function(l, model, vars, tstat) {
+
+  n         <- nrow(l)
+  var_resid <- residual_var(model, n)
+  ind       <- ind_bp(model, var_resid)
+
+  l %<>%
+    select(-1) %>%
+    select(!!! syms(vars)) %>%
+    bind_cols(ind)
+
+  np <-
+    l %>%
+    ncol() %>%
+    subtract(1)
+
+  ps <-
+    l %>%
+    bp_model() %>%
+    pchisq(df = np, lower.tail = FALSE)
+
+  bp <-
+    l %>%
+    bp_model() %>%
+    prepend(tstat)
+
+  list(bp = bp, ps = ps, np = np)
+
 }
