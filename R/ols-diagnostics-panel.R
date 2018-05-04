@@ -8,10 +8,8 @@
 #' \code{ols_diagnostic_panel()} has been deprecated. Instead use \code{ols_plot_diagnostics()}.
 #'
 #' @examples
-#' \dontrun{
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_plot_diagnostics(model)
-#' }
 #'
 #' @importFrom ggplot2 xlim stat_qq geom_histogram geom_line theme element_blank
 #' @importFrom stats quantile
@@ -20,9 +18,7 @@
 #'
 ols_plot_diagnostics <- function(model) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
+  check_model(model)
 
   predicted <- NULL
   fct_color <- NULL

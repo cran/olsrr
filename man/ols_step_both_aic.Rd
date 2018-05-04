@@ -49,15 +49,12 @@ stepwise manner until there is no variable left to enter or remove any more.
 # stepwise regression
 model <- lm(y ~ ., data = stepdata)
 ols_step_both_aic(model)
-}
 
-\dontrun{
 # stepwise regression plot
 model <- lm(y ~ ., data = stepdata)
 k <- ols_step_both_aic(model)
 plot(k)
 }
-
 }
 \references{
 Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.

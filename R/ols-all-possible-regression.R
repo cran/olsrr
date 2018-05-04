@@ -37,16 +37,12 @@
 #' @family variable selection procedures
 #'
 #' @examples
-#' \dontrun{
 #' model <- lm(mpg ~ disp + hp, data = mtcars)
 #' k <- ols_step_all_possible(model)
 #' k
-#' }
 #'
-#' \dontrun{
 #' # plot
 #' plot(k)
-#' }
 #'
 #' @importFrom utils combn
 #' @importFrom dplyr group_by summarise_all
@@ -62,13 +58,8 @@ ols_step_all_possible <- function(model, ...) UseMethod("ols_step_all_possible")
 #'
 ols_step_all_possible.default <- function(model, ...) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
-
-  if (length(model$coefficients) < 3) {
-    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
-  }
+  check_model(model)
+  check_npredictors(model, 3)
 
   metrics <- allpos_helper(model)
 

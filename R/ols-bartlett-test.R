@@ -29,16 +29,12 @@
 #' @family heteroskedasticity tests
 #'
 #' @examples
-#' \dontrun{
 #' # using grouping variable
 #' library(descriptr)
 #' ols_test_bartlett(mtcarz, mpg, group_var = cyl)
-#' }
 #'
-#' \dontrun{
 #' # using variables
 #' ols_test_bartlett(hsb, read, write)
-#' }
 #'
 #' @importFrom rlang quo_is_null quos
 #' @importFrom stats pchisq formula
@@ -53,6 +49,8 @@ ols_test_bartlett <- function(data, ...) UseMethod("ols_test_bartlett")
 #' @rdname ols_test_bartlett
 #'
 ols_test_bartlett.default <- function(data, ..., group_var = NULL) {
+
+  check_data(data)
 
   groupvar  <- enquo(group_var)
   varyables <- quos(...)

@@ -35,15 +35,12 @@
 #' # stepwise regression
 #' model <- lm(y ~ ., data = stepdata)
 #' ols_step_both_aic(model)
-#' }
 #'
-#' \dontrun{
 #' # stepwise regression plot
 #' model <- lm(y ~ ., data = stepdata)
 #' k <- ols_step_both_aic(model)
 #' plot(k)
 #' }
-#'
 #' @family variable selection procedures
 #'
 #' @export
@@ -54,17 +51,9 @@ ols_step_both_aic <- function(model, details = FALSE) UseMethod("ols_step_both_a
 #'
 ols_step_both_aic.default <- function(model, details = FALSE) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
-
-  if (!is.logical(details)) {
-    stop("details must be either TRUE or FALSE", call. = FALSE)
-  }
-
-  if (length(model$coefficients) < 3) {
-    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
-  }
+  check_model(model)
+  check_logic(details)
+  check_npredictors(model, 3)
 
   response <-
     model %>%

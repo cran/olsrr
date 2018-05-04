@@ -28,10 +28,8 @@
 #' \code{ols_dfbetas_panel()} has been deprecated. Instead use \code{ols_plot_dfbetas()}.
 #'
 #' @examples
-#' \dontrun{
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_plot_dfbetas(model)
-#' }
 #'
 #' @seealso [ols_plot_dffits()]
 #'
@@ -41,9 +39,7 @@
 #'
 ols_plot_dfbetas <- function(model) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
+  check_model(model)
 
   obs <- NULL
   txt <- NULL

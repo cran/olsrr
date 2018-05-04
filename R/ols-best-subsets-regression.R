@@ -36,17 +36,13 @@
 #' @family variable selection procedures
 #'
 #' @examples
-#' \dontrun{
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_step_best_subset(model)
-#' }
 #'
-#' \dontrun{
 #' # plot
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' k <- ols_step_best_subset(model)
 #' plot(k)
-#' }
 #'
 #' @export
 #'
@@ -56,13 +52,8 @@ ols_step_best_subset <- function(model, ...) UseMethod("ols_step_best_subset")
 #'
 ols_step_best_subset.default <- function(model, ...) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
-
-  if (length(model$coefficients) < 3) {
-    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
-  }
+  check_model(model)
+  check_npredictors(model, 3)
 
   nam <- coeff_names(model)
 

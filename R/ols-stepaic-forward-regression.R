@@ -29,18 +29,14 @@
 #' \code{ols_stepaic_forward()} has been deprecated. Instead use \code{ols_step_forward_aic()}.
 #'
 #' @examples
-#' \dontrun{
 #' # stepwise forward regression
 #' model <- lm(y ~ ., data = surgical)
 #' ols_step_forward_aic(model)
-#' }
 #'
-#' \dontrun{
 #' # stepwise forward regression plot
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_step_forward_aic(model)
 #' plot(k)
-#' }
 #'
 #' @importFrom dplyr desc
 #'
@@ -55,17 +51,9 @@ ols_step_forward_aic <- function(model, ...) UseMethod("ols_step_forward_aic")
 #'
 ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
 
-  if (!all(class(model) == "lm")) {
-    stop("Please specify a OLS linear regression model.", call. = FALSE)
-  }
-
-  if (!is.logical(details)) {
-    stop("details must be either TRUE or FALSE", call. = FALSE)
-  }
-
-  if (length(model$coefficients) < 3) {
-    stop("Please specify a model with at least 2 predictors.", call. = FALSE)
-  }
+  check_model(model)
+  check_logic(details)
+  check_npredictors(model, 3)
 
   response <-
     model %>%
