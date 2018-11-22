@@ -15,6 +15,7 @@
 #' An object of class \code{"ols_step_both_aic"} is a list containing the
 #' following components:
 #'
+#' \item{model}{model with the least AIC; an object of class \code{lm}}
 #' \item{predictors}{variables added/removed from the model}
 #' \item{method}{addition/deletion}
 #' \item{aics}{akaike information criteria}
@@ -40,6 +41,10 @@
 #' model <- lm(y ~ ., data = stepdata)
 #' k <- ols_step_both_aic(model)
 #' plot(k)
+#'
+#' # final model
+#' k$model
+#'
 #' }
 #' @family variable selection procedures
 #'
@@ -300,6 +305,8 @@ ols_step_both_aic.default <- function(model, details = FALSE) {
     print(fi)
   }
 
+  final_model <- lm(paste(response, "~", paste(preds, collapse = " + ")), data = l)
+
   out <- list(predictors = var_index,
               method     = method,
               steps      = all_step,
@@ -340,7 +347,7 @@ plot.ols_step_both_aic <- function(x, ...) {
     x %>%
     use_series(aic) %>%
     length() %>%
-    seq_len()
+    seq_len(.)
 
   xloc  <- y - 0.1
   yloc  <- x$aic - 0.2

@@ -1,13 +1,11 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## olsrr: Tools for building OLS Regression models
-
-**Author:** [Aravind Hebbali](https://www.aravindhebbali.com/)<br/>
-**License:**
-[MIT](https://opensource.org/licenses/MIT)
+# olsrr
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/olsrr)](https://cran.r-project.org/package=olsrr)
+[![cran
+checks](https://cranchecks.info/badges/summary/olsrr)](https://cran.r-project.org/web/checks/check_results_olsrr.html)
 [![Travis-CI Build
 Status](https://travis-ci.org/rsquaredacademy/olsrr.svg?branch=master)](https://travis-ci.org/rsquaredacademy/olsrr)
 [![AppVeyor Build
@@ -19,8 +17,8 @@ status](https://codecov.io/gh/rsquaredacademy/olsrr/branch/master/graph/badge.sv
 
 ## Overview
 
-The olsrr package provides following tools for teaching and learning OLS
-regression using R:
+The olsrr package provides following tools for building OLS regression
+models using R:
 
   - Comprehensive Regression Output
   - Variable Selection Procedures
@@ -48,7 +46,7 @@ devtools::install_github("rsquaredacademy/olsrr")
 
 Use `ols_launch_app()` to explore the package using a shiny app.
 
-## Vignettes
+## Articles
 
   - [Quick
     Overview](https://olsrr.rsquaredacademy.com/articles/intro.html)
@@ -62,11 +60,9 @@ Use `ols_launch_app()` to explore the package using a shiny app.
   - [Collinearity
     Diagnostics](https://olsrr.rsquaredacademy.com/articles/regression_diagnostics.html)
 
-## Consistent Prefix
+## Usage
 
 olsrr uses consistent prefix `ols_` for easy tab completion.
-
-## Quick Demo
 
 olsrr is built with the aim of helping those users who are new to the R
 language. If you know how to write a `formula` or build models using
@@ -75,7 +71,7 @@ object of class `lm` as input. So you just need to build a model using
 `lm` and then pass it onto the functions in olsrr. Below is a quick
 demo:
 
-##### Regression
+#### Regression
 
 ``` r
 ols_regress(mpg ~ disp + hp + wt + qsec, data = mtcars)
@@ -112,13 +108,13 @@ ols_regress(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #> ----------------------------------------------------------------------------------------
 ```
 
-##### Stepwise Regression
+#### Stepwise Regression
 
 Build regression model from a set of candidate predictor variables by
 entering and removing predictors based on p values, in a stepwise manner
 until there is no variable left to enter or remove any more.
 
-###### Variable Selection
+#### Variable Selection
 
 ``` r
 # stepwise regression
@@ -200,13 +196,13 @@ ols_step_both_p(model)
 #> ------------------------------------------------------------------------------------------
 ```
 
-##### Stepwise AIC Backward Regression
+#### Stepwise AIC Backward Regression
 
 Build regression model from a set of candidate predictor variables by
 removing predictors based on Akaike Information Criteria, in a stepwise
 manner until there is no variable left to remove any more.
 
-###### Variable Selection
+##### Variable Selection
 
 ``` r
 # stepwise aic backward regression
@@ -248,7 +244,7 @@ k
 #> ---------------------------------------------------------------------------
 ```
 
-##### Breusch Pagan Test
+#### Breusch Pagan Test
 
 Breusch Pagan test is used to test for herteroskedasticity (non-constant
 error variance). It tests whether the variance of the errors from a
@@ -276,7 +272,7 @@ ols_test_breusch_pagan(model)
 #>  Prob > Chi2   =    0.231818
 ```
 
-##### Collinearity Diagnostics
+#### Collinearity Diagnostics
 
 ``` r
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
@@ -307,6 +303,15 @@ ols_coll_diag(model)
 #> 4 0.7017528428 0.0024577686
 #> 5 0.2598094157 0.9925403056
 ```
+
+## Getting Help
+
+If you encounter a bug, please file a minimal reproducible example using
+[reprex](https://reprex.tidyverse.org/index.html) on github. For
+questions and clarifications, use
+[StackOverflow](https://stackoverflow.com/).
+
+## Code of Conduct
 
 Please note that this project is released with a [Contributor Code of
 Conduct](CONDUCT.md). By participating in this project you agree to

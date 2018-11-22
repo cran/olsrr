@@ -19,6 +19,7 @@
 #' An object of class \code{"ols_step_both_p"} is a list containing the
 #' following components:
 #'
+#' \item{model}{final model; an object of class \code{lm}}
 #' \item{orders}{candidate predictor variables according to the order by which they were added or removed from the model}
 #' \item{method}{addition/deletion}
 #' \item{steps}{total number of steps}
@@ -47,6 +48,9 @@
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_step_both_p(model)
 #' plot(k)
+#'
+#' # final model
+#' k$model
 #'
 #' @family variable selection_procedures
 #'
@@ -120,13 +124,9 @@ ols_step_both_p.default <- function(model, pent = 0.1, prem = 0.3, details = FAL
     m <- lm(paste(response, "~", paste(predictors, collapse = " + ")), l)
     m_sum <- Anova(m)
     pvals[i] <- m_sum$`Pr(>F)`[ppos]
-    # pvals[i] <- m$pvalues[ppos]
-    # tvals[i] <- m$tvalues[ppos]
   }
 
   minp    <- which(pvals == min(pvals, na.rm = TRUE))
-  # tvals   <- abs(tvals)
-  # maxt    <- which(tvals == max(tvals))
   preds   <- all_pred[minp]
   lpreds  <- length(preds)
   fr      <- ols_regress(paste(response, "~",
@@ -184,13 +184,9 @@ ols_step_both_p.default <- function(model, pent = 0.1, prem = 0.3, details = FAL
                                       paste(predictors, collapse = " + ")), l)
       m_sum <- Anova(m)
       pvals[i] <- m_sum$`Pr(>F)`[ppos]
-      # pvals[i]   <- m$pvalues[ppos]
-      # tvals[i]   <- m$tvalues[ppos]
     }
 
     minp  <- which(pvals == min(pvals, na.rm = TRUE))
-    # tvals <- abs(tvals)
-    # maxt  <- which(tvals == max(tvals))
 
     if (pvals[minp] <= pent) {
 
@@ -242,7 +238,6 @@ ols_step_both_p.default <- function(model, pent = 0.1, prem = 0.3, details = FAL
       m2      <- lm(paste(response, "~",
                                    paste(preds, collapse = " + ")), l)
       m2_sum <- Anova(m2)
-      # pvals[i] <- m_sum$`Pr(>F)`[ppos]
       pvals_r <- m2_sum$`Pr(>F)`
       maxp    <- which(pvals_r == max(pvals_r, na.rm = TRUE))
       if (pvals_r[maxp] > prem) {
@@ -306,6 +301,8 @@ ols_step_both_p.default <- function(model, pent = 0.1, prem = 0.3, details = FAL
   )
   print(fi)
 
+  final_model <- lm(paste(response, "~", paste(preds, collapse = " + ")), data = l)
+
   beta_pval <- tibble(
     model     = rep(seq_len(all_step), lbetas),
     predictor = names(betas),
@@ -329,7 +326,8 @@ ols_step_both_p.default <- function(model, pent = 0.1, prem = 0.3, details = FAL
     betas      = betas,
     lbetas     = lbetas,
     pvalues    = pvalues,
-    beta_pval  = beta_pval
+    beta_pval  = beta_pval,
+    model      = final_model
   )
 
   class(out) <- "ols_step_both_p"
@@ -371,7 +369,6 @@ plot.ols_step_both_p <- function(x, model = NA, ...) {
   p5 <- plot_stepwise(d5, "SBIC")
   p6 <- plot_stepwise(d6, "SBC")
 
-  # grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = "Stepwise Regression")
   myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
                   plot_4 = p4, plot_5 = p5, plot_6 = p6)
   result <- marrangeGrob(myplots, nrow = 2, ncol = 2)

@@ -18,6 +18,7 @@
 #' An object of class \code{"ols_step_forward_p"} is a list containing the
 #' following components:
 #'
+#' \item{model}{final model; an object of class \code{lm}}
 #' \item{steps}{number of steps}
 #' \item{predictors}{variables added to the model}
 #' \item{rsquare}{coefficient of determination}
@@ -47,6 +48,9 @@
 #' model <- lm(y ~ ., data = surgical)
 #' k <- ols_step_forward_p(model)
 #' plot(k)
+#'
+#' # final model
+#' k$model
 #'
 #' @importFrom stats qt
 #' @importFrom dplyr full_join
@@ -111,13 +115,9 @@ ols_step_forward_p.default <- function(model, penter = 0.3, details = FALSE, ...
     m <- lm(paste(response, "~", paste(predictors, collapse = " + ")), l)
     m_sum <- Anova(m)
     pvals[i] <- m_sum$`Pr(>F)`[ppos]
-    # pvals[i] <- m$pvalues[ppos]
-    # tvals[i] <- m$tvalues[ppos]
   }
 
   minp   <- which(pvals == min(pvals, na.rm = TRUE))
-  # tvals  <- abs(tvals)
-  # maxt   <- which(tvals == max(tvals))
   preds  <- all_pred[minp]
   lpreds <- length(preds)
   fr     <- ols_regress(paste(response, "~", paste(preds, collapse = " + ")), l)
@@ -162,13 +162,9 @@ ols_step_forward_p.default <- function(model, penter = 0.3, details = FALSE, ...
                              paste(predictors, collapse = " + ")), l)
       m_sum <- Anova(m)
       pvals[i] <- m_sum$`Pr(>F)`[ppos]
-      # pvals[i] <- m$pvalues[ppos]
-      # tvals[i] <- m$tvalues[ppos]
     }
 
     minp  <- which(pvals == min(pvals, na.rm = TRUE))
-    # tvals <- abs(tvals)
-    # maxt  <- which(tvals == max(tvals))
 
     if (pvals[minp] <= penter) {
 
@@ -233,6 +229,7 @@ ols_step_forward_p.default <- function(model, penter = 0.3, details = FALSE, ...
   )
   print(fi)
 
+  final_model <- lm(paste(response, "~", paste(preds, collapse = " + ")), data = l)
 
   out <- list(predictors = preds,
               mallows_cp = cp,
@@ -243,7 +240,8 @@ ols_step_forward_p.default <- function(model, penter = 0.3, details = FALSE, ...
               adjr       = adjrsq,
               rmse       = rmse,
               aic        = aic,
-              sbc        = sbc)
+              sbc        = sbc,
+              model      = final_model)
 
   class(out) <- "ols_step_forward_p"
 
@@ -284,7 +282,6 @@ plot.ols_step_forward_p <- function(x, model = NA, ...) {
   p5 <- plot_stepwise(d5, "SBIC")
   p6 <- plot_stepwise(d6, "SBC")
 
-  # grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = "Stepwise Forward Regression")
   myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
                   plot_4 = p4, plot_5 = p5, plot_6 = p6)
   result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
