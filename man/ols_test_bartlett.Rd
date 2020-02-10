@@ -42,10 +42,10 @@ is an alternative test that is less sensitive to departures from normality.
 \examples{
 # using grouping variable
 library(descriptr)
-ols_test_bartlett(mtcarz, mpg, group_var = cyl)
+ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
 
 # using variables
-ols_test_bartlett(hsb, read, write)
+ols_test_bartlett(hsb, 'read', 'write')
 
 }
 \references{
@@ -56,3 +56,4 @@ Eighth Edition, Iowa State University Press.
 Other heteroskedasticity tests: \code{\link{ols_test_breusch_pagan}},
   \code{\link{ols_test_f}}, \code{\link{ols_test_score}}
 }
+\concept{heteroskedasticity tests}

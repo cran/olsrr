@@ -107,20 +107,14 @@ ols_test_breusch_pagan.default <- function(model, fitted.values = TRUE, rhs = FA
   )
 
   method <- match.arg(p.adj)
-  p.adj <- match.arg(p.adj)
+  p.adj  <- match.arg(p.adj)
+
   check_options(p.adj)
-  l      <- ols_prep_avplot_data(model)
-  n      <- nrow(l)
 
-  response <-
-    l %>%
-    names() %>%
-    extract(1)
-
-  predictors <-
-    l %>%
-    names() %>%
-    extract(-1)
+  l <- ols_prep_avplot_data(model)
+  n <- nrow(l)
+  response   <- names(l)[1]
+  predictors <- names(l)[-1]
 
   if (fitted.values) {
     vars <- NA
@@ -163,9 +157,9 @@ ols_test_breusch_pagan.default <- function(model, fitted.values = TRUE, rhs = FA
           bp      <- inter$bp
           p       <- bp_case_adj(method, loops$pvals, inter$np, inter$ps)
         } else {
-          result <- bp_case_7(l, model, vars)
-          bp     <- result$bp
-          p      <- pchisq(bp, df = result$df, lower.tail = FALSE)
+          result  <- bp_case_7(l, model, vars)
+          bp      <- result$bp
+          p       <- pchisq(bp, df = result$df, lower.tail = FALSE)
         }
       }
     } else {
@@ -220,7 +214,7 @@ print.ols_test_breusch_pagan <- function(x, ...) {
 #' * rhs = TRUE
 #' * multiple = TRUE
 #'
-#' @param l A tibble created using `avplots_data()`.
+#' @param l A \code{data.frame} created using `avplots_data()`.
 #' @param model An object of class \code{lm}.
 #'
 #' @noRd
@@ -230,17 +224,9 @@ bp_case_2 <- function(l, model) {
   n         <- model_rows(model)
   var_resid <- residual_var(model, n)
   ind       <- ind_bp(model, var_resid)
-
-  df <-
-    l %>%
-    select(-1) %>%
-    ncol()
-
-  l %<>%
-    select(-1) %>%
-    bind_cols(ind)
-
-  bp <- bp_model(l)
+  df        <- ncol(l[, -1])
+  l         <- cbind(l[, -1], ind)
+  bp        <- bp_model(l)
 
   list(bp = bp, df = df)
 
@@ -261,11 +247,7 @@ bp_case_3 <- function(model) {
   pred         <- fitted(model)
   scaled_resid <- resid_scaled(model, pred)
 
-  lm(scaled_resid ~ pred) %>%
-    anova() %>%
-    use_series(`Sum Sq`) %>%
-    extract(1) %>%
-    divide_by(2)
+  (anova(lm(scaled_resid ~ pred))$`Sum Sq`[1]) / 2
 
 }
 
@@ -275,7 +257,7 @@ bp_case_3 <- function(model) {
 #' * rhs = TRUE
 #' * multiple = FALSE
 #'
-#' @param l A tibble created using `avplots_data()`.
+#' @param l A \code{data.frame} created using `avplots_data()`.
 #' @param model An object of class \code{lm}.
 #'
 #' @noRd
@@ -285,19 +267,9 @@ bp_case_6 <- function(l, model) {
   n         <- nrow(l)
   var_resid <- residual_var(model, n)
   ind       <- ind_bp(model, var_resid)
-
-  np <-
-    l %>%
-    names() %>%
-    extract(-1) %>%
-    length()
-
-  bp <-
-    l %>%
-    bind_cols(ind) %>%
-    select(-1) %>%
-    bp_model()
-
+  np        <- length(names(l)[-1])
+  bp        <- bp_model(cbind(l, ind)[, -1])
+  
   list(bp = bp, df = np)
 
 }
@@ -308,9 +280,7 @@ bp_case_6 <- function(l, model) {
 #' * rhs = FALSE
 #' * multiple = FALSE
 #'
-#' @importFrom rlang !!! syms
-#'
-#' @param l A tibble created using `avplots_data()`.
+#' @param l A \code{data.frame} created using `avplots_data()`.
 #' @param model An object of class \code{lm}.
 #' @param vars Variables to be used for the test.
 #'
@@ -321,17 +291,9 @@ bp_case_7 <- function(l, model, vars) {
   n         <- nrow(l)
   var_resid <- residual_var(model, n)
   ind       <- ind_bp(model, var_resid)
-
-  l %<>%
-    select(!!! syms(vars)) %>%
-    bind_cols(ind)
-
-  bp <- bp_model(l)
-
-  nd <-
-    l %>%
-    ncol() %>%
-    subtract(1)
+  l         <- cbind(l[, vars], ind)
+  bp        <- bp_model(l)
+  nd        <- ncol(l) - 1
 
   list(bp = bp, df = nd)
 
@@ -339,38 +301,20 @@ bp_case_7 <- function(l, model, vars) {
 
 #' @description Fit model using the columns in the data set.
 #'
-#' @param l A tibble created using `avplots_data()`.
+#' @param l A \code{data.frame} created using `avplots_data()`.
 #'
 #' @noRd
 #'
 bp_model <- function(l) {
-
-  l %>%
-    lm(ind ~ ., data = .) %>%
-    bp_fit()
-
+  bp_fit(lm(ind ~ ., data = l))
 }
 
 bp_fit <- function(l) {
-
-  l %>%
-    fitted() %>%
-    raise_to_power(2) %>%
-    sum() %>%
-    divide_by(2)
-
+  (sum(fitted(l) ^ 2)) / 2
 }
 
 ind_bp <- function(model, var_resid) {
-
-  model %>%
-    residuals() %>%
-    raise_to_power(2) %>%
-    divide_by(var_resid) %>%
-    subtract(1) %>%
-    tibble() %>%
-    set_colnames("ind")
-
+  data.frame(ind = ((residuals(model) ^ 2) / var_resid) - 1)
 }
 
 #' @description
@@ -379,25 +323,19 @@ ind_bp <- function(model, var_resid) {
 #' * rhs = TRUE
 #' * multiple = TRUE
 #'
-#' @param l A tibble created using `avplots_data()`.
+#' @param l A \code{data.frame} created using `avplots_data()`.
 #' @param model An object of class \code{lm}.
 #'
 #' @noRd
 #'
 bp_case_one <- function(l, model) {
 
-  nam <-
-    l %>%
-    names() %>%
-    extract(-1)
-
+  nam       <- names(l)[-1]
   np        <- length(nam)
   n         <- nrow(l)
   var_resid <- residual_var(model, n)
   ind       <- ind_bp(model, var_resid)
-
-  l %<>%
-    bind_cols(ind)
+  l         <- cbind(l, ind)
 
   list(np = np, nam = nam, l = l)
 
@@ -415,13 +353,8 @@ bp_case_loop <- function(np, nam, l) {
 
   for (i in seq_len(np)) {
 
-    form <- as.formula(paste("ind ~", nam[i]))
-
-    tstat[i] <-
-      l %>%
-      lm(form, data = .) %>%
-      bp_fit()
-
+    form     <- as.formula(paste("ind ~", nam[i]))
+    tstat[i] <- bp_fit(lm(form, data = l))
     pvals[i] <- pchisq(tstat[i], df = 1, lower.tail = FALSE)
 
   }
@@ -437,17 +370,9 @@ bp_case_loop <- function(np, nam, l) {
 #'
 bp_case_inter <- function(l, np, tstat) {
 
-  comp <-
-    l %>%
-    select(-1) %>%
-    lm(ind ~ ., data = .) %>%
-    bp_fit()
-
-  ps <- pchisq(comp, df = np, lower.tail = FALSE)
-
-  bp <-
-    comp %>%
-    prepend(tstat)
+  comp <- bp_fit(lm(ind ~ ., data = l[, -1])) 
+  ps   <- pchisq(comp, df = np, lower.tail = FALSE)
+  bp   <- c(tstat, comp)
 
   list(bp = bp, ps = ps)
 
@@ -471,27 +396,11 @@ bp_case_adj <- function(method, pvals, np, ps) {
 
   } else if (method == "holm") {
 
-    j <-
-      pvals %>%
-      length() %>%
-      seq_len(.) %>%
-      rev()
-
-    h <-
-      pvals %>%
-      order() %>%
-      order()
-
-    pvals_sort <-
-      pvals %>%
-      sort() %>%
-      multiply_by(j)
-
-    pholms <-
-      pmin(1, pvals_sort) %>%
-      extract(h)
-
-    p <- c(pholms, ps)
+    j          <- rev(seq_len(length(pvals)))
+    h          <- order(order(pvals))
+    pvals_sort <- sort(pvals) * j
+    pholms     <- pmin(1, pvals_sort)[h] 
+    p          <- c(pholms, ps)
 
   } else {
 
@@ -515,26 +424,10 @@ bp_case_5_inter <- function(l, model, vars, tstat) {
   n         <- nrow(l)
   var_resid <- residual_var(model, n)
   ind       <- ind_bp(model, var_resid)
-
-  l %<>%
-    select(-1) %>%
-    select(!!! syms(vars)) %>%
-    bind_cols(ind)
-
-  np <-
-    l %>%
-    ncol() %>%
-    subtract(1)
-
-  ps <-
-    l %>%
-    bp_model() %>%
-    pchisq(df = np, lower.tail = FALSE)
-
-  bp <-
-    l %>%
-    bp_model() %>%
-    prepend(tstat)
+  l         <- cbind(l[, -1][, vars], ind)
+  np        <- ncol(l) - 1
+  ps        <- pchisq(q = bp_model(l), df = np, lower.tail = FALSE)
+  bp        <- c(tstat, bp_model(l))
 
   list(bp = bp, ps = ps, np = np)
 

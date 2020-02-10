@@ -3,6 +3,7 @@
 #' Panel of plots for regression diagnostics.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' #' @section Deprecated Function:
 #' \code{ols_diagnostic_panel()} has been deprecated. Instead use \code{ols_plot_diagnostics()}.
@@ -16,7 +17,7 @@
 #'
 #' @export
 #'
-ols_plot_diagnostics <- function(model) {
+ols_plot_diagnostics <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
@@ -43,14 +44,9 @@ ols_plot_diagnostics <- function(model) {
     geom_hline(yintercept = 0, colour = "red")
 
   # deleted studentized residual vs predicted values
-  k <- ols_prep_dsrvf_data(model)
-
-  d22 <-
-    k %>%
-    use_series(ds) %>%
-    mutate(
-      txt = ifelse(color == "outlier", obs, NA)
-    )
+  k       <- ols_prep_dsrvf_data(model)
+  d22     <- k$ds
+  d22$txt <- ifelse(d22$color == "outlier", d22$obs, NA)
 
   d2 <- ggplot(d22, aes(x = pred, y = dsr, label = txt)) +
     geom_point(aes(colour = fct_color)) +
@@ -61,22 +57,11 @@ ols_plot_diagnostics <- function(model) {
     geom_hline(yintercept = c(-2, 2), colour = "red")
 
   # studentized residuals vs leverage plot
-  j <- ols_prep_rstudlev_data(model)
-
-  d33 <-
-    j %>%
-    use_series(levrstud) %>%
-    mutate(
-      txt = ifelse(color == "normal", NA, obs)
-    )
-
-  resp <-
-    model %>%
-    model.frame() %>%
-    names() %>%
-    extract(1)
-
-  title <- paste("Outlier and Leverage Diagnostics for", resp)
+  j       <- ols_prep_rstudlev_data(model)
+  d33     <- j$levrstud
+  d33$txt <- ifelse(d33$color == "normal", NA, d33$obs)
+  resp    <- names(model.frame(model))[1]
+  title   <- paste("Outlier and Leverage Diagnostics for", resp)
 
   d3 <- ggplot(d33, aes(leverage, rstudent, label = txt)) +
     geom_point(shape = 1, aes(colour = fct_color)) + labs(color = "Observation") +
@@ -92,7 +77,7 @@ ols_plot_diagnostics <- function(model) {
   x     <- qnorm(c(0.25, 0.75))
   slope <- diff(y) / diff(x)
   int   <- y[1L] - slope * x[1L]
-  d4    <- tibble(x = resid)
+  d4    <- data.frame(x = resid)
 
   p4 <- ggplot(d4, aes(sample = x)) + stat_qq(color = "blue") +
     geom_abline(slope = slope, intercept = int, color = "red") +
@@ -101,13 +86,8 @@ ols_plot_diagnostics <- function(model) {
 
 
   # observed vs fitted values plot
-  oname <-
-    model %>%
-    model.frame() %>%
-    names() %>%
-    extract(1)
-
-  d5 <- obspred(model)
+  oname <- names(model.frame(model))[1]
+  d5    <- obspred(model)
 
   p5 <- ggplot(d5, aes(x = x, y = y)) +
     geom_point(color = "blue", shape = 1) +
@@ -153,8 +133,8 @@ ols_plot_diagnostics <- function(model) {
   b  <- histdata(model)
   h  <- hist(b$resid, plot = FALSE)
   f  <- histn(b$resid, h)
-  db <- tibble(x = f$xfit, y = f$yfit)
-  d9 <- tibble(x = b$resid)
+  db <- data.frame(x = f$xfit, y = f$yfit)
+  d9 <- data.frame(x = b$resid)
 
   p9 <- ggplot(d9, aes(x = x)) +
     geom_histogram(bins = 6, color = "black", fill = "#ADD8E6") +
@@ -162,7 +142,7 @@ ols_plot_diagnostics <- function(model) {
     xlab("Residuals") + ggtitle("Residual Histogram")
 
   # residual box plot
-  d10 <- tibble(resid = residuals(model))
+  d10 <- data.frame(resid = residuals(model))
 
   p10 <- ggplot(d10, aes(x = factor(0), y = resid)) +
     geom_boxplot(
@@ -178,8 +158,12 @@ ols_plot_diagnostics <- function(model) {
     plot_9 = p9, plot_10 = p10
   )
 
-  result_plot <- marrangeGrob(result, nrow = 2, ncol = 2)
-  result_plot
+  if (print_plot) {
+    marrangeGrob(result, nrow = 2, ncol = 2)
+  } else {
+    return(result)
+  }
+
 }
 
 

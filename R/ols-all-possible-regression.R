@@ -7,6 +7,7 @@
 #'
 #' @param model An object of class \code{lm}.
 #' @param x An object of class \code{ols_best_subset}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #' @param ... Other arguments.
 #'
 #' @return \code{ols_step_all_possible} returns an object of class \code{"ols_step_all_possible"}.
@@ -45,10 +46,6 @@
 #' plot(k)
 #'
 #' @importFrom utils combn
-#' @importFrom dplyr group_by summarise_all
-#' @importFrom purrr map_int
-#' @importFrom tidyr nest
-#' @importFrom magrittr add use_series
 #'
 #' @export
 #'
@@ -88,14 +85,10 @@ ols_step_all_possible.default <- function(model, ...) {
     sorted <- rbind(sorted, temp)
   }
 
-  mindex <-
-    sorted %>%
-    nrow() %>%
-    seq_len(.)
-
+  mindex <- seq_len(nrow(sorted))
   sorted <- cbind(mindex, sorted)
 
-  class(sorted) <- c("ols_step_all_possible", "tibble", "data.frame")
+  class(sorted) <- c("ols_step_all_possible", "data.frame")
 
   return(sorted)
 }
@@ -115,16 +108,8 @@ ols_all_subset <- function(model, ...) {
 print.ols_step_all_possible <- function(x, ...) {
 
   mindex <- NULL
-
-  n <-
-    x %>%
-    use_series(mindex) %>%
-    max()
-
-  k <-
-    x %>%
-    as_tibble() %>%
-    select(c(1:5, 7))
+  n <- max(x$mindex)
+  k <- data.frame(x)[, c(1:5, 7)]
 
   names(k) <- c("Index", "N", "Predictors", "R-Square", "Adj. R-Square",
                 "Mallow's Cp")
@@ -136,7 +121,7 @@ print.ols_step_all_possible <- function(x, ...) {
 #' @export
 #' @rdname ols_step_all_possible
 #'
-plot.ols_step_all_possible <- function(x, model = NA, ...) {
+plot.ols_step_all_possible <- function(x, model = NA, print_plot = TRUE, ...) {
 
   n       <- NULL
   y       <- NULL
@@ -152,23 +137,25 @@ plot.ols_step_all_possible <- function(x, model = NA, ...) {
   sbic    <- NULL
   sbc     <- NULL
 
-  d <-
-    tibble(index = x$mindex, n = x$n, rsquare = x$rsquare, adjr = x$adjr,
-           cp = x$cp, aic = x$aic, sbic = x$sbic, sbc = x$sbc) %>%
-    mutate(cps = abs(n - cp))
+  d <- data.frame(index = x$mindex, n = x$n, rsquare = x$rsquare, adjr = x$adjr,
+                  cp = x$cp, aic = x$aic, sbic = x$sbic, sbc = x$sbc)
+  d$cps <- abs(d$n - d$cp)
 
-  p1 <- all_possible_plot(d, rsquare, title = "R-Square")
-  p2 <- all_possible_plot(d, adjr, title = "Adj. R-Square")
-  p3 <- all_possible_plot(d, cps, title = "Cp")
-  p4 <- all_possible_plot(d, aic, title = "AIC")
-  p5 <- all_possible_plot(d, sbic, title = "SBIC")
-  p6 <- all_possible_plot(d, sbc, title = "SBC")
+  p1 <- all_possible_plot(d, "rsquare", title = "R-Square")
+  p2 <- all_possible_plot(d, "adjr", title = "Adj. R-Square")
+  p3 <- all_possible_plot(d, "cps", title = "Cp")
+  p4 <- all_possible_plot(d, "aic", title = "AIC")
+  p5 <- all_possible_plot(d, "sbic", title = "SBIC")
+  p6 <- all_possible_plot(d, "sbc", title = "SBC")
 
-  # grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = "All Possible Regression")
   myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
                   plot_4 = p4, plot_5 = p5, plot_6 = p6)
-  result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
-  result
+
+  if (print_plot) {
+    marrangeGrob(myplots, nrow = 2, ncol = 2)
+  } else {
+    return(myplots)
+  }
 
 }
 
@@ -177,10 +164,9 @@ plot.ols_step_all_possible <- function(x, model = NA, ...) {
 #' Generate plots for best subset regression.
 #'
 #' @importFrom ggplot2 ggtitle scale_shape_manual scale_size_manual scale_color_manual ggtitle geom_text
-#' @importFrom rlang enquo !!
 #'
-#' @param d1 A tibble.
-#' @param d2 A tibble.
+#' @param d1 A data.frame.
+#' @param d2 A data.frame.
 #' @param title Plot title.
 #'
 #' @noRd
@@ -194,17 +180,13 @@ all_possible_plot <- function(d, var, title = "R-Square") {
   size  <- NULL
   tx    <- NULL
 
-  varr <- enquo(var)
-
-  d1 <-
-    d %>%
-    select(x = n, y = !! varr)
-
-  maxs  <- all_pos_maxs(d, !! varr, title)
+  d1    <- d[, c("n", var)]
+  colnames(d1) <- c("x", "y")
+  maxs  <- all_pos_maxs(d, var, title)
   lmaxs <- all_pos_lmaxs(maxs)
-  index <- all_pos_index(d, !! varr, title)
+  index <- all_pos_index(d, var, title)
 
-  d2 <- tibble(x = lmaxs, y = maxs, tx = index, shape = 6, size = 4)
+  d2 <- data.frame(x = lmaxs, y = maxs, tx = index, shape = 6, size = 4)
 
   ggplot(d1, aes(x = x, y = y)) + geom_point(color = "blue", size = 2) +
     xlab("") + ylab("") + ggtitle(title) +
@@ -217,70 +199,58 @@ all_possible_plot <- function(d, var, title = "R-Square") {
 
 }
 
-#' @importFrom dplyr summarise
+#' @import data.table
 all_pos_maxs <- function(d, var, title = "R-Square") {
 
-  n <- NULL
+  n       <- NULL
+  is_dt   <- is.data.table(d)
+  d_class <- class(d)
 
-  varr <- enquo(var)
-
-  if (title == "R-Square" | title == "Adj. R-Square") {
-    d %>%
-      select(!! varr, n) %>%
-      group_by(n) %>%
-      summarise(max(!! varr)) %>%
-      pull(2)
-  } else {
-    d %>%
-      select(!! varr, n) %>%
-      group_by(n) %>%
-      summarise(min(!! varr)) %>%
-      pull(2)
+  if(!is_dt) {
+    d <- data.table(d)
   }
 
+  if (title == "R-Square" | title == "Adj. R-Square") {
+    out <- d[, list(maximum = max(get(var))), by = n]
+  } else {
+    out <- d[, list(minimum = min(get(var))), by = n]
+  }
+
+  if(!is_dt) {
+    class(out) <- d_class
+  }
+  out[[2]]
 }
 
 all_pos_lmaxs <- function(maxs) {
 
-  maxs %>%
-    length() %>%
-    seq_len(.)
+  seq_len(length(maxs))
 
 }
 
 all_pos_index <- function(d, var, title = "R-Square") {
 
-  n     <- NULL
-  varr  <- enquo(var)
-  index <- c()
+  n       <- NULL
+  index   <- c()
+  is_dt   <- is.data.table(d)
+  d_class <- class(d)
 
-  if (title == "R-Square" | title == "Adj. R-Square") {
-    m <-
-      d %>%
-      group_by(n) %>%
-      select(n, !! varr) %>%
-      summarise_all(max)
-  } else {
-    m <-
-      d %>%
-      group_by(n) %>%
-      select(n, !! varr) %>%
-      summarise_all(min)
+  if(!is_dt) {
+    d <- data.table(d)
   }
 
-  k <-
-    d %>%
-    group_by(n) %>%
-    nest()
+  if (title == "R-Square" | title == "Adj. R-Square") {
+    m <- d[, list(maximum = max(get(var))), by = n]
+  } else {
+    m <- d[, list(minimum = min(get(var))), by = n]
+  }
+
+  colnames(m) <- c("n", var)
+  k  <- split(d, by = "n")
 
   for (i in m$n) {
-
-    j <- which(part_2(m, !! varr, i) == part_3(k, !! varr, i))
-
-    index[i] <-
-      part_1(k, i) %>%
-      extract(j)
-
+    j <- which(part_2(m, var, i) == part_3(k, var, i))
+    index[i] <- part_1(k, i)[j] 
   }
 
   return(index)
@@ -289,35 +259,16 @@ all_pos_index <- function(d, var, title = "R-Square") {
 
 
 part_1 <- function(k, i) {
-
   index <- NULL
-
-  k %>%
-    extract2(2) %>%
-    extract2(i) %>%
-    use_series(index)
-
+  k[[i]]$index
 }
 
 part_2 <- function(m, var, i) {
-
-  varr <- enquo(var)
-
-  m %>%
-    pull(!! varr) %>%
-    extract(i)
-
+  m[[var]][i]
 }
 
 part_3 <- function(k, var, i) {
-
-  varr <- enquo(var)
-
-  k %>%
-    extract2(2) %>%
-    extract2(i) %>%
-    pull(!! varr)
-
+  k[[i]][[var]]
 }
 
 
@@ -328,7 +279,7 @@ part_3 <- function(k, var, i) {
 #' @param object An object of class \code{lm}.
 #' @param ... Other arguments.
 #'
-#' @return \code{ols_step_all_possible_betas} returns a tibble containing:
+#' @return \code{ols_step_all_possible_betas} returns a \code{data.frame} containing:
 #'
 #' \item{model_index}{model number}
 #' \item{predictor}{predictor}
@@ -356,37 +307,14 @@ ols_step_all_possible_betas <- function(object, ...) {
   rsq    <- NULL
   lpreds <- NULL
 
-  metrics <- allpos_helper(object)
+  metrics    <- allpos_helper(object)
+  beta_names <- names(metrics$betas)
+  mindex     <- seq_len(length(metrics$rsq))
+  reps       <- metrics$lpreds + 1
+  m_index    <- rep(mindex, reps)
+  beta       <- metrics$betas
 
-  beta_names <-
-    metrics %>%
-    use_series(betas) %>%
-    names()
-
-  mindex <-
-    metrics %>%
-    use_series(rsq) %>%
-    length() %>%
-    seq_len(.)
-
-  reps <-
-    metrics %>%
-    use_series(lpreds) %>%
-    add(1)
-
-  m_index <-
-    mindex %>%
-    rep(reps)
-
-  beta <-
-    metrics %>%
-    use_series(betas)
-
-  tibble(
-    model = m_index,
-    predictor = beta_names,
-    beta = beta
-  )
+  data.frame(model = m_index, predictor = beta_names, beta = beta)
 
 }
 
@@ -425,7 +353,7 @@ allpos_helper <- function(model) {
   gap       <- len_preds - 1
   data      <- mod_sel_data(model)
   space     <- coeff_length(predicts, gap)
-  colas     <- map_int(combs, ncol)
+  colas     <- unname(unlist(lapply(combs, ncol)))
   response  <- varnames[1]
   p         <- colas
   t         <- cumsum(colas)
@@ -494,14 +422,8 @@ allpos_helper <- function(model) {
 #' @noRd
 #'
 coeff_names <- function(model) {
-
   terms <- NULL
-
-  model %>%
-    use_series(terms) %>%
-    attr(which = "factors") %>%
-    colnames()
-
+  colnames(attr(model$terms, which = "factor"))
 }
 
 #' Model data columns
@@ -513,11 +435,7 @@ coeff_names <- function(model) {
 #' @noRd
 #'
 model_colnames <- function(model) {
-
-  model %>%
-    model.frame() %>%
-    names()
-
+  names(model.frame(model))
 }
 
 #' Coefficients length
@@ -530,10 +448,5 @@ model_colnames <- function(model) {
 #' @noRd
 #'
 coeff_length <- function(predicts, gap) {
-
-  predicts %>%
-    nchar() %>%
-    sum() %>%
-    add(gap)
-
+  sum(nchar(predicts)) + gap
 }

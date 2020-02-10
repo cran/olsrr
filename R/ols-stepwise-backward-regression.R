@@ -9,9 +9,11 @@
 #'   candidate predictor variables.
 #' @param prem p value; variables with p more than \code{prem} will be removed
 #'   from the model.
+#' @param progress Logical; if \code{TRUE}, will display variable selection progress.
 #' @param details Logical; if \code{TRUE}, will print the regression result at
 #'   each step.
 #' @param x An object of class \code{ols_step_backward_p}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #' @param ... Other inputs.
 #'
 #' @return \code{ols_step_backward_p} returns an object of class \code{"ols_step_backward_p"}.
@@ -58,8 +60,12 @@ ols_step_backward_p <- function(model, ...) UseMethod("ols_step_backward_p")
 #' @export
 #' @rdname ols_step_backward_p
 #'
-ols_step_backward_p.default <- function(model, prem = 0.3, details = FALSE, ...) {
-  
+ols_step_backward_p.default <- function(model, prem = 0.3, progress = FALSE, details = FALSE, ...) {
+
+  if (details) {
+    progress <- TRUE
+  }
+
   check_model(model)
   check_logic(details)
   check_values(prem, 0, 1)
@@ -83,24 +89,26 @@ ols_step_backward_p.default <- function(model, prem = 0.3, details = FALSE, ...)
   cp       <- c()
   rmse     <- c()
 
-  cat(format("Backward Elimination Method", justify = "left", width = 27), "\n")
-  cat(rep("-", 27), sep = "", "\n\n")
-  cat(format("Candidate Terms:", justify = "left", width = 16), "\n\n")
-  for (i in seq_len(length(nam))) {
-    cat(paste(i, ".", nam[i]), "\n")
-  }
-  cat("\n")
+  if (progress) {
+    cat(format("Backward Elimination Method", justify = "left", width = 27), "\n")
+    cat(rep("-", 27), sep = "", "\n\n")
+    cat(format("Candidate Terms:", justify = "left", width = 16), "\n\n")
+    for (i in seq_len(length(nam))) {
+      cat(paste(i, ".", nam[i]), "\n")
+    }
+    cat("\n")
 
-  cat(crayon::bold$red("We are eliminating variables based on p value..."))
-  cat("\n")
+    cat("We are eliminating variables based on p value...")
+    cat("\n")
 
-  cat("\n")
-  if (!details) {
-    cat("Variables Removed:", "\n\n")
+    cat("\n")
+    if (!details) {
+      cat("Variables Removed:", "\n\n")
+    }
   }
 
   while (!end) {
-    m <- lm(paste(response, "~", paste(preds, collapse = " + ")), l)
+    m     <- lm(paste(response, "~", paste(preds, collapse = " + ")), l)
     m_sum <- Anova(m)
     pvals <- m_sum$`Pr(>F)`
     maxp  <- which(pvals == max(pvals, na.rm = TRUE))
@@ -112,8 +120,7 @@ ols_step_backward_p.default <- function(model, prem = 0.3, details = FALSE, ...)
         rpred  <- c(rpred, preds[maxp])
         preds  <- preds[-maxp]
         lp     <- length(rpred)
-        fr     <- ols_regress(paste(response, "~",
-                                paste(preds, collapse = " + ")), l)
+        fr     <- ols_regress(paste(response, "~", paste(preds, collapse = " + ")), l)
         rsq    <- c(rsq, fr$rsq)
         adjrsq <- c(adjrsq, fr$adjr)
         aic    <- c(aic, ols_aic(fr$model))
@@ -122,13 +129,15 @@ ols_step_backward_p.default <- function(model, prem = 0.3, details = FALSE, ...)
         cp     <- c(cp, ols_mallows_cp(fr$model, model))
         rmse   <- c(rmse, sqrt(fr$ems))
 
-        if (interactive()) {
-          cat(crayon::red(clisymbols::symbol$cross), crayon::bold(dplyr::last(rpred)), "\n")
-        } else {
-          cat(paste("-", dplyr::last(rpred)), "\n")
+        if (progress) {
+          if (interactive()) {
+            cat("x", tail(rpred, n = 1), "\n")
+          } else {
+            cat(paste("-", tail(rpred, n = 1)), "\n")
+          }
         }
 
-        if (details == TRUE) {
+        if (details) {
           cat("\n")
           cat(paste("Backward Elimination: Step", step, "\n\n"), paste("Variable", rpred[lp], "Removed"), "\n\n")
           m <- ols_regress(paste(response, "~", paste(preds, collapse = " + ")), l)
@@ -137,34 +146,38 @@ ols_step_backward_p.default <- function(model, prem = 0.3, details = FALSE, ...)
         }
       } else {
         end <- TRUE
-        cat("\n")
-        cat(crayon::bold$red(glue("No more variables satisfy the condition of p value = {prem}")))
-        cat("\n")
+        if (progress) {
+          cat("\n")
+          cat(paste0("No more variables satisfy the condition of p value = ", prem))
+          cat("\n")
+        }
       }
     )
   }
 
-  if (details == TRUE) {
+  if (details) {
     cat("\n\n")
     cat("Variables Removed:", "\n\n")
     for (i in seq_len(length(rpred))) {
       if (interactive()) {
-        cat(crayon::red(clisymbols::symbol$cross), crayon::bold(rpred[i]), "\n")
+        cat("x", rpred[i], "\n")
       } else {
         cat(paste("-", rpred[i]), "\n")
       }
     }
   }
 
-  cat("\n\n")
-  cat("Final Model Output", "\n")
-  cat(rep("-", 18), sep = "", "\n\n")
+  if (progress) {
+    cat("\n\n")
+    cat("Final Model Output", "\n")
+    cat(rep("-", 18), sep = "", "\n\n")
 
-  fi <- ols_regress(
-    paste(response, "~", paste(preds, collapse = " + ")),
-    data = l
-  )
-  print(fi)
+    fi <- ols_regress(
+      paste(response, "~", paste(preds, collapse = " + ")),
+      data = l
+    )
+    print(fi)
+  }
 
   final_model <- lm(paste(response, "~", paste(preds, collapse = " + ")), data = l)
 
@@ -200,19 +213,19 @@ print.ols_step_backward_p <- function(x, ...) {
 #' @export
 #' @rdname ols_step_backward_p
 #'
-plot.ols_step_backward_p <- function(x, model = NA, ...) {
+plot.ols_step_backward_p <- function(x, model = NA, print_plot = TRUE, ...) {
 
   a <- NULL
   b <- NULL
 
   y <- seq_len(x$steps)
 
-  d1 <- tibble(a = y, b = x$rsquare)
-  d2 <- tibble(a = y, b = x$adjr)
-  d3 <- tibble(a = y, b = x$mallows_cp)
-  d4 <- tibble(a = y, b = x$aic)
-  d5 <- tibble(a = y, b = x$sbic)
-  d6 <- tibble(a = y, b = x$sbc)
+  d1 <- data.frame(a = y, b = x$rsquare)
+  d2 <- data.frame(a = y, b = x$adjr)
+  d3 <- data.frame(a = y, b = x$mallows_cp)
+  d4 <- data.frame(a = y, b = x$aic)
+  d5 <- data.frame(a = y, b = x$sbic)
+  d6 <- data.frame(a = y, b = x$sbc)
 
   p1 <- plot_stepwise(d1, "R-Square")
   p2 <- plot_stepwise(d2, "Adj. R-Square")
@@ -221,12 +234,14 @@ plot.ols_step_backward_p <- function(x, model = NA, ...) {
   p5 <- plot_stepwise(d5, "SBIC")
   p6 <- plot_stepwise(d6, "SBC")
 
-  # grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2, top = "Stepwise Backward Regression")
-
   myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
                   plot_4 = p4, plot_5 = p5, plot_6 = p6)
-  result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
-  result
+
+  if (print_plot) {
+    marrangeGrob(myplots, nrow = 2, ncol = 2)
+  } else {
+    return(myplots)
+  }
 
 }
 

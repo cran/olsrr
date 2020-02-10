@@ -7,6 +7,7 @@
 #' residual variability.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details The added variable plot was introduced by Mosteller and Tukey
 #' (1977). It enables us to visualize the regression coefficient of a new
@@ -48,16 +49,14 @@
 #' ols_plot_added_variable(model)
 #'
 #' @importFrom stats lm
-#' @importFrom tibble tibble
 #' @importFrom ggplot2 ggplot aes geom_point xlab ylab stat_smooth
-#' @importFrom magrittr %>%
 #' @importFrom gridExtra marrangeGrob
 #'
 #' @seealso [ols_plot_resid_regressor()], [ols_plot_comp_plus_resid()]
 #'
 #' @export
 #'
-ols_plot_added_variable <- function(model) {
+ols_plot_added_variable <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
@@ -71,7 +70,7 @@ ols_plot_added_variable <- function(model) {
 
     x <- ols_prep_regress_x(data, i)
     y <- ols_prep_regress_y(data, i)
-    d <- tibble(x, y)
+    d <- data.frame(x, y)
 
     p <- eval(substitute(ggplot(d, aes(x = x, y = y)) +
       geom_point(colour = "blue", size = 2) +
@@ -84,8 +83,11 @@ ols_plot_added_variable <- function(model) {
 
   }
 
-  result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
-  result
+  if (print_plot) {
+    marrangeGrob(myplots, nrow = 2, ncol = 2)
+  } else {
+    return(myplots)
+  }
 
 }
 
@@ -108,11 +110,7 @@ ols_avplots <- function(model) {
 #' @noRd
 #'
 remove_columns <- function(data, i) {
-
-  data %>%
-    select(-1, -i) %>%
-    as.matrix()
-
+	as.matrix(data[, c(-1, -i)])
 }
 
 #' Select columns
@@ -125,9 +123,5 @@ remove_columns <- function(data, i) {
 #' @noRd
 #'
 select_columns <- function(data, i = 1) {
-
-  data %>%
-    select(i) %>%
-    as.matrix()
-
+	as.matrix(data[, i])
 }

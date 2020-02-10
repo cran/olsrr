@@ -4,14 +4,16 @@
 \alias{rvsr_plot_shiny}
 \title{Residual vs regressors plot for shiny app}
 \usage{
-rvsr_plot_shiny(model, data, variable)
+rvsr_plot_shiny(model, data, variable, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
 
-\item{data}{A \code{dataframe} or \code{tibble}.}
+\item{data}{A \code{data.frame} or \code{tibble}.}
 
 \item{variable}{Character; new predictor to be added to the \code{model}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \description{
 Graph to determine whether we should add a new predictor to the

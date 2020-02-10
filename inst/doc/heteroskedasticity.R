@@ -1,18 +1,15 @@
 ## ---- echo=FALSE, message=FALSE------------------------------------------
 library(olsrr)
-library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(purrr)
-library(tibble)
 library(nortest)
 library(goftest)
 
 ## ----bartlett1-----------------------------------------------------------
-ols_test_bartlett(hsb, read, group_var = female)
+ols_test_bartlett(hsb, 'read', group_var = 'female')
 
 ## ----bartlett2-----------------------------------------------------------
-ols_test_bartlett(hsb, read, write)
+ols_test_bartlett(hsb, 'read', 'write')
 
 ## ----bp1-----------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)

@@ -3,6 +3,7 @@
 #' Box plot of residuals to examine if residuals are normally distributed.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @section Deprecated Function:
 #' \code{ols_rsd_boxplot()} has been deprecated. Instead use \code{ols_plot_resid_box()}.
@@ -18,23 +19,25 @@
 #'
 #' @export
 #'
-ols_plot_resid_box <- function(model) {
+ols_plot_resid_box <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  resid <-
-    model %>%
-    residuals()
+  resid <- residuals(model)
+  d     <- data.frame(resid = resid)
 
-  d <- tibble(resid = resid)
-
-  p <- ggplot(d, aes(x = factor(0), y = resid)) +
+  p <-
+    ggplot(d, aes(x = factor(0), y = resid)) +
     geom_boxplot(outlier.color = "green", outlier.size = 3,
                  fill = "grey80", colour = "#3366FF") +
     xlab(" ") + ylab("Residuals") + ggtitle("Residual Box Plot") +
     theme(axis.text.x = element_blank())
 
-  print(p)
+  if (print_plot) {
+    print(p)
+  } else {
+    return(p)
+  }
 
 }
 

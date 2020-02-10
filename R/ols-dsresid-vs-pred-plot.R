@@ -6,6 +6,7 @@
 #' examine model fit.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details
 #' Studentized deleted residuals (or externally studentized residuals) is the
@@ -18,7 +19,7 @@
 #' @return \code{ols_plot_resid_stud_fit} returns  a list containing the
 #' following components:
 #'
-#' \item{outliers}{a tibble with observation number, fitted values and deleted studentized
+#' \item{outliers}{a \code{data.frame} with observation number, fitted values and deleted studentized
 #' residuals that exceed the \code{threshold} for classifying observations as
 #' outliers/influential observations}
 #' \item{threshold}{\code{threshold} for classifying an observation as an outlier/influential observation}
@@ -34,37 +35,26 @@
 #'   [ols_plot_resid_stud()]
 #'
 #' @importFrom stats fitted rstudent
-#' @importFrom dplyr mutate
 #'
 #' @export
 #'
-ols_plot_resid_stud_fit <- function(model) {
+ols_plot_resid_stud_fit <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  fct_color <- NULL
-  color     <- NULL
-  pred      <- NULL
-  dsr       <- NULL
-  txt       <- NULL
-  obs       <- NULL
-  ds        <- NULL
-
-  k <- ols_prep_dsrvf_data(model)
-
-  d <-
-    k %>%
-    use_series(ds) %>%
-    mutate(
-      txt = ifelse(color == "outlier", obs, NA)
-    )
-
-  f <-
-    d %>%
-    filter(color == "outlier") %>%
-    select(obs, pred, dsr) %>%
-    set_colnames(c("observation", "fitted_values", "del_stud_resid"))
-
+  fct_color   <- NULL
+  color       <- NULL
+  pred        <- NULL
+  dsr         <- NULL
+  txt         <- NULL
+  obs         <- NULL
+  ds          <- NULL
+  k           <- ols_prep_dsrvf_data(model)
+  d           <- k$ds
+  d$txt       <- ifelse(d$color == "outlier", d$obs, NA)
+  f           <- d[color == "outlier", c("obs", "pred", "dsr")]
+  colnames(f) <- c("observation", "fitted_values", "del_stud_resid")
+    
   p <- ggplot(d, aes(x = pred, y = dsr, label = txt)) +
     geom_point(aes(colour = fct_color)) +
     scale_color_manual(values = c("blue", "red")) +
@@ -80,9 +70,11 @@ ols_plot_resid_stud_fit <- function(model) {
       label = paste0("Threshold: abs(", 2, ")")
     )
 
-  suppressWarnings(print(p))
-  result <- list(outliers = f, threshold = 2, plot = p)
-  invisible(result)
+  if (print_plot) {
+    suppressWarnings(print(p))
+  } else {
+    return(list(plot = p, outliers = f, threshold = 2))
+  }
 
 }
 

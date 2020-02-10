@@ -5,16 +5,18 @@
 \alias{ols_dffits_plot}
 \title{DFFITS plot}
 \usage{
-ols_plot_dffits(model)
+ols_plot_dffits(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
 \code{ols_plot_dffits} returns  a list containing the
 following components:
 
-\item{outliers}{a tibble with observation number and \code{DFFITs} that exceed \code{threshold}}
+\item{outliers}{a \code{data.frame} with observation number and \code{DFFITs} that exceed \code{threshold}}
 \item{threshold}{\code{threshold} for classifying an observation as an outlier}
 }
 \description{

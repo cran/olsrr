@@ -5,16 +5,18 @@
 \alias{ols_srsd_chart}
 \title{Standardized residual chart}
 \usage{
-ols_plot_resid_stand(model)
+ols_plot_resid_stand(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
 \code{ols_plot_resid_stand} returns  a list containing the
 following components:
 
-\item{outliers}{a tibble with observation number and \code{standardized resiudals} that
+\item{outliers}{a \code{data.frame} with observation number and \code{standardized resiudals} that
 exceed \code{threshold}} for classifying an observation as an outlier
 \item{threshold}{\code{threshold} for classifying an observation as an outlier}
 }

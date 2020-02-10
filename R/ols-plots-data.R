@@ -9,28 +9,15 @@
 #' ols_prep_avplot_data(model)
 #'
 #' @importFrom stats model.frame residuals as.formula
-#' @importFrom dplyr bind_cols
 #'
 #' @export
 #'
 ols_prep_avplot_data <- function(model) {
 
-  m1 <-
-    model %>%
-    model.frame() %>%
-    as_data_frame()
-
-  m2 <-
-    model %>%
-    model.matrix() %>%
-    as_data_frame() %>%
-    select(-1)
-
-  m1 %>%
-    select(1) %>%
-    bind_cols(m2) %>%
-    as_data_frame()
-
+  m1 <- as.data.frame(model.frame(model))[1]
+  m2 <- as.data.frame(model.matrix(model))[, -1]
+  as.data.frame(cbind(m1, m2))
+  
 }
 
 #' Regress predictor on other predictors
@@ -53,8 +40,7 @@ ols_prep_regress_x <- function(data, i) {
 
   x <- remove_columns(data, i)
   y <- select_columns(data, i)
-  lsfit(x, y) %>%
-    use_series(residuals)
+  lsfit(x, y)$residuals
 
 }
 
@@ -76,8 +62,7 @@ ols_prep_regress_y <- function(data, i) {
 
   x <- remove_columns(data, i)
   y <- select_columns(data)
-  lsfit(x, y) %>%
-    use_series(residuals)
+  lsfit(x, y)$residuals
 
 }
 
@@ -92,8 +77,6 @@ ols_prep_regress_y <- function(data, i) {
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 #' ols_prep_cdplot_data(model)
 #'
-#' @importFrom dplyr if_else
-#'
 #' @export
 #'
 ols_prep_cdplot_data <- function(model) {
@@ -103,23 +86,22 @@ ols_prep_cdplot_data <- function(model) {
   cooksd    <- cooks.distance(model)
   n         <- length(cooksd)
   obs       <- seq_len(n)
-  ckd       <- tibble(obs = obs, cd = cooksd)
+  ckd       <- data.frame(obs = obs, cd = cooksd)
   ts        <- 4 / n
   cooks_max <- max(cooksd)
 
-  ckd %<>%
-    mutate(
-      color = if_else(cd >= ts, "outlier", "normal"),
-      fct_color = color %>%
-        factor() %>%
-        ordered(levels = c("normal", "outlier"))
-    )
+  ckd$color     <- ifelse(ckd$cd >= ts, "outlier", "normal")
+  ckd$fct_color <- ordered(factor(ckd$color), levels = c("normal", "outlier"))
 
-  maxx <-
-    cooks_max %>%
-    multiply_by(0.01) %>%
-    add(cooks_max)
+  # ckd %<>%
+  #   mutate(
+  #     color = ifelse(cd >= ts, "outlier", "normal"),
+  #     fct_color = color %>%
+  #       factor() %>%
+  #       ordered(levels = c("normal", "outlier"))
+  #   )
 
+  maxx <- cooks_max * 0.01 + cooks_max
   list(ckd = ckd, maxx = maxx, ts = ts)
 
 }
@@ -143,11 +125,9 @@ ols_prep_outlier_obs <- function(k) {
   color <- NULL
   obs   <- NULL
 
-  k %>%
-    use_series(ckd) %>%
-    mutate(
-      txt = ifelse(color == "outlier", obs, NA)
-    )
+  data <- k$ckd
+  data$txt <- ifelse(data$color == "outlier", data$obs, NA)
+  return(data)
 
 }
 
@@ -171,13 +151,9 @@ ols_prep_cdplot_outliers <- function(k) {
   obs   <- NULL
   cd    <- NULL
 
-  k %>%
-    use_series(ckd) %>%
-    filter(
-      color == "outlier"
-    ) %>%
-    select(obs, cd) %>%
-    set_colnames(c("observation", "cooks_distance"))
+  result <- k$ckd[k$ckd$color == "outlier", c("obs", "cd")]
+  names(result) <- c("observation", "cooks_distance")
+  return(result)  
 
 }
 
@@ -194,25 +170,30 @@ ols_prep_cdplot_outliers <- function(k) {
 #' n <- nrow(dfb)
 #' threshold <- 2 / sqrt(n)
 #' dbetas  <- dfb[, 1]
-#' df_data <- tibble::tibble(obs = seq_len(n), dbetas = dbetas)
+#' df_data <- data.frame(obs = seq_len(n), dbetas = dbetas)
 #' ols_prep_dfbeta_data(df_data, threshold)
 #'
 #' @export
 #'
 ols_prep_dfbeta_data <- function(d, threshold) {
 
-  color <- NULL
-  obs   <- NULL
+  color       <- NULL
+  obs         <- NULL
+  d$color     <- ifelse(((d$dbetas >= threshold) | (d$dbetas <= -threshold)), c("outlier"), c("normal"))
+  d$fct_color <- ordered(factor(d$color), levels = c("normal", "outlier"))
+  d$txt       <- ifelse(d$color == "outlier", d$obs, NA)
 
-  d %>%
-    mutate(
-      color = ifelse(((d$dbetas >= threshold) | (d$dbetas <= -threshold)),
-                     c("outlier"), c("normal")),
-      fct_color = color %>%
-        factor() %>%
-        ordered(levels = c("normal", "outlier")),
-      txt = ifelse(color == "outlier", obs, NA)
-    )
+  return(d)
+
+  # d %>%
+  #   mutate(
+  #     color = ifelse(((d$dbetas >= threshold) | (d$dbetas <= -threshold)),
+  #                    c("outlier"), c("normal")),
+  #     fct_color = color %>%
+  #       factor() %>%
+  #       ordered(levels = c("normal", "outlier")),
+  #     txt = ifelse(color == "outlier", obs, NA)
+  #   )
 
 }
 
@@ -228,7 +209,7 @@ ols_prep_dfbeta_data <- function(d, threshold) {
 #' n <- nrow(dfb)
 #' threshold <- 2 / sqrt(n)
 #' dbetas  <- dfb[, 1]
-#' df_data <- tibble::tibble(obs = seq_len(n), dbetas = dbetas)
+#' df_data <- data.frame(obs = seq_len(n), dbetas = dbetas)
 #' d <- ols_prep_dfbeta_data(df_data, threshold)
 #' ols_prep_dfbeta_outliers(d)
 #'
@@ -240,11 +221,7 @@ ols_prep_dfbeta_outliers <- function(d) {
   obs    <- NULL
   dbetas <- NULL
 
-  d %>%
-    filter(
-      color == "outlier"
-    ) %>%
-    select(obs, dbetas)
+  d[d$color == "outlier", c("obs", "dbetas")]
 
 }
 
@@ -259,50 +236,36 @@ ols_prep_dfbeta_outliers <- function(d) {
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_prep_dsrvf_data(model)
 #'
-#' @importFrom magrittr %<>%
-#'
 #' @export
 #'
 ols_prep_dsrvf_data <- function(model) {
 
-  dsr   <- NULL
-  color <- NULL
-  pred  <- fitted(model)
+  dsr     <- NULL
+  color   <- NULL
+  pred    <- fitted(model)
+  dsresid <- unname(rstudent(model))
+  n       <- length(dsresid)
+  ds      <- data.frame(obs = seq_len(n), dsr = dsresid)
 
-  dsresid <-
-    model %>%
-    rstudent() %>%
-    unname()
+  ds$color     <- ifelse((abs(ds$dsr) >= 2), "outlier", "normal")
+  ds$fct_color <- ordered(factor(ds$color), levels = c("normal", "outlier"))
 
-  n  <- length(dsresid)
-  ds <- tibble(obs = seq_len(n), dsr = dsresid)
+  # ds %<>%
+  #   mutate(
+  #     color = ifelse((abs(dsr) >= 2), "outlier", "normal"),
+  #     fct_color = color %>%
+  #       factor() %>%
+  #       ordered(levels = c("normal", "outlier"))
+  #   )
 
-  ds %<>%
-    mutate(
-      color = ifelse((abs(dsr) >= 2), "outlier", "normal"),
-      fct_color = color %>%
-        factor() %>%
-        ordered(levels = c("normal", "outlier"))
-    )
+  ds2 <- data.frame(obs       = seq_len(n),
+                    pred      = pred,
+                    dsr       = ds$dsr,
+                    color     = ds$color,
+                    fct_color = ds$fct_color)
 
-  ds2 <- tibble(obs       = seq_len(n),
-                pred      = pred,
-                dsr       = ds$dsr,
-                color     = ds$color,
-                fct_color = ds$fct_color)
-
-  minx <-
-    ds2 %>%
-    use_series(dsr) %>%
-    min() %>%
-    subtract(1)
-
-  maxx <-
-    ds2 %>%
-    use_series(dsr) %>%
-    max() %>%
-    add(1)
-
+  minx <- min(ds2$dsr) - 1
+  maxx <- max(ds2$dsr) + 1
   cminx <- ifelse(minx < -2, minx, -2.5)
   cmaxx <- ifelse(maxx > 2, maxx, 2.5)
 
@@ -332,7 +295,7 @@ ols_prep_rfsplot_fmdata<- function(model) {
   percenti  <- ecdf(y)
   x         <- percenti(y)
 
-  tibble(x, y)
+  data.frame(x, y)
 
 }
 
@@ -345,7 +308,7 @@ ols_prep_rfsplot_rsdata <- function(model) {
   residtile <- ecdf(y)
   x         <- residtile(y)
 
-  tibble(x, y)
+  data.frame(x, y)
 
 }
 
@@ -363,23 +326,10 @@ ols_prep_rfsplot_rsdata <- function(model) {
 #'
 ols_prep_rvsrplot_data <- function(model) {
 
-  np <-
-    model %>%
-    coefficients() %>%
-    length() %>%
-    subtract(1)
-
-  dat <-
-    model %>%
-    model.frame() %>%
-    select(-1)
-
-  pnames <-
-    model %>%
-    coefficients() %>%
-    names() %>%
-    extract(-1)
-
+  np     <- length(coefficients(model)) - 1
+  dat    <- model.frame(model)[, -1]
+  pnames <- names(coefficients(model))[-1]
+    
   list(np = np, dat = dat, pnames = pnames)
 
 }
@@ -394,77 +344,44 @@ ols_prep_rvsrplot_data <- function(model) {
 #' model <- lm(read ~ write + math + science, data = hsb)
 #' ols_prep_rstudlev_data(model)
 #'
-#' @importFrom dplyr case_when
 #'
 #' @export
 #'
 ols_prep_rstudlev_data <- function(model) {
 
-  color <- NULL
+color     <- NULL
+leverage  <- unname(hatvalues(model))
+rstudent  <- unname(rstudent(model))
+k         <- length(coefficients(model))
+n         <- nrow(model.frame(model))
+lev_thrsh <- (2 * k) / n
+rst_thrsh <- 2
+miny      <- min(rstudent) - 3
+maxy      <- max(rstudent) + 3
+minx      <- min(leverage)
+maxx      <- ifelse((max(leverage) > lev_thrsh), max(leverage), (lev_thrsh + 0.05))
+levrstud  <- data.frame(obs = seq_len(n), leverage, rstudent)
 
-  leverage <-
-    model %>%
-    hatvalues() %>%
-    unname()
+levrstud$color1 <- ifelse((levrstud$leverage < lev_thrsh & abs(levrstud$rstudent) < 2), "normal", NA)
+levrstud$color2 <- ifelse((levrstud$leverage > lev_thrsh & abs(levrstud$rstudent) < 2), "leverage", NA)
+levrstud$color3 <- ifelse((levrstud$leverage < lev_thrsh & abs(levrstud$rstudent) > 2), "outlier", NA)
+levrstud$color4 <- ifelse((levrstud$leverage > lev_thrsh & abs(levrstud$rstudent) > 2), "outlier & leverage", NA)
 
-  rstudent <-
-    model %>%
-    rstudent() %>%
-    unname()
+d1 <- levrstud[!is.na(levrstud$color1), c("obs", "leverage", "rstudent", "color1")]
+d2 <- levrstud[!is.na(levrstud$color2), c("obs", "leverage", "rstudent", "color2")]
+d3 <- levrstud[!is.na(levrstud$color3), c("obs", "leverage", "rstudent", "color3")]
+d4 <- levrstud[!is.na(levrstud$color4), c("obs", "leverage", "rstudent", "color4")]
 
-  k <-
-    model %>%
-    coefficients() %>%
-    length()
+colnames(d1) <- c("obs", "leverage", "rstudent", "color")
+colnames(d2) <- c("obs", "leverage", "rstudent", "color")
+colnames(d3) <- c("obs", "leverage", "rstudent", "color")
+colnames(d4) <- c("obs", "leverage", "rstudent", "color")
 
-  n <-
-    model %>%
-    model.frame() %>%
-    nrow()
+out <- rbind(d1, d2, d3, d4)
+out$fct_color <- ordered(factor(out$color), levels = c("normal", "leverage", "outlier", "outlier & leverage"))
+levdata <- out[order(out$obs), ]
 
-  lev_thrsh <-
-    2 %>%
-    multiply_by(k) %>%
-    divide_by(n)
-
-  rst_thrsh <- 2
-
-  miny <-
-    rstudent %>%
-    min() %>%
-    subtract(3)
-
-  maxy <-
-    rstudent %>%
-    max() %>%
-    add(3)
-
-  minx <- min(leverage)
-  maxx <- ifelse((max(leverage) > lev_thrsh), max(leverage),
-                 (lev_thrsh + 0.05))
-
-  levrstud <-
-    tibble(obs = seq_len(n), leverage, rstudent) %>%
-    mutate(
-      color = case_when(
-        (leverage < lev_thrsh & abs(rstudent) < 2) ~ "normal",
-        (leverage > lev_thrsh & abs(rstudent) < 2) ~ "leverage",
-        (leverage < lev_thrsh & abs(rstudent) > 2) ~ "outlier",
-        TRUE ~ "outlier & leverage"
-      ),
-
-      fct_color = color %>%
-        factor() %>%
-        ordered(
-          levels = c(
-            "normal", "leverage", "outlier",
-            "outlier & leverage"
-          )
-        )
-
-    )
-
-  list(levrstud  = levrstud,
+  list(levrstud  = levdata,
        lev_thrsh = lev_thrsh,
        minx      = minx,
        miny      = miny,
@@ -489,57 +406,26 @@ ols_prep_rstudlev_data <- function(model) {
 ols_prep_srplot_data<- function(model) {
 
   color <- NULL
+  dstud <- unname(rstudent(model))
+  obs   <- seq_len(length(dstud))
+  dsr   <- data.frame(obs = obs, dsr = dstud) 
+  dsr$color     <- ifelse((abs(dsr$dsr) >= 3), "outlier", "normal")
+  dsr$fct_color <- ordered(factor(dsr$color), levels = c("normal", "outlier"))
+    
+    # mutate(
+    #   color = ifelse((abs(dsr) >= 3), "outlier", "normal"),
+    #   fct_color = color %>%
+    #     factor() %>%
+    #     ordered(levels = c("normal", "outlier"))
+    # )
 
-  dstud <-
-    model %>%
-    rstudent() %>%
-    unname()
-
-  obs <-
-    dstud %>%
-    length() %>%
-    seq_len(.)
-
-  dsr <-
-    tibble(obs = obs, dsr = dstud) %>%
-    mutate(
-      color = ifelse((abs(dsr) >= 3), "outlier", "normal"),
-      fct_color = color %>%
-        factor() %>%
-        ordered(levels = c("normal", "outlier"))
-    )
-
-  cminxx <-
-    dsr %>%
-    use_series(dsr) %>%
-    min() %>%
-    subtract(1) %>%
-    floor(.)
-
-  cmaxxx <-
-    dsr %>%
-    use_series(dsr) %>%
-    max() %>%
-    subtract(1) %>%
-    floor(.)
-
-  cminx <- ifelse(cminxx > -3, -3, cminxx)
-  cmaxx <- ifelse(cmaxxx < 3, 3, cmaxxx)
-
-  nseq <-
-    0 %>%
-    add(cminx) %>%
-    add(1) %>%
-    abs() %>%
-    seq_len(.) %>%
-    multiply_by(-1)
-
-  pseq <-
-    0 %>%
-    add(cmaxx) %>%
-    subtract(1) %>%
-    seq_len(.)
-
+  cminxx <- floor(min(dsr$dsr) - 1)
+  cmaxxx <- floor(max(dsr$dsr) - 1)
+  cminx  <- ifelse(cminxx > -3, -3, cminxx)
+  cmaxx  <- ifelse(cmaxxx < 3, 3, cmaxxx)
+  nseq   <- seq_len(abs(cminx + 1)) * -1
+  pseq   <- seq_len(cmaxx - 1)
+    
   list(cminx = cminx,
        cmaxx = cmaxx,
        nseq  = nseq,
@@ -558,37 +444,21 @@ ols_prep_srplot_data<- function(model) {
 #' model <- lm(read ~ write + math + science, data = hsb)
 #' ols_prep_srchart_data(model)
 #'
-#' @importFrom magrittr is_greater_than
-#'
 #' @export
 #'
 ols_prep_srchart_data <- function(model) {
 
-  color <- NULL
+  color     <- NULL
+  sdres     <- rstandard(model)
+  sdres_out <- abs(sdres) > 2
+  outlier   <- sdres[sdres_out]
+  obs       <- seq_len(length(sdres))
+    
+  out           <- data.frame(obs = obs, sdres = sdres) 
+  out$color     <- ifelse(((out$sdres >= 2) | (out$sdres <= -2)), c("outlier"), c("normal"))
+  out$fct_color <- ordered( factor(out$color), levels = c("normal", "outlier"))
+  out$txt       <- ifelse(out$color == "outlier", out$obs, NA)
 
-  sdres <- rstandard(model)
-
-  sdres_out <-
-    sdres %>%
-    abs() %>%
-    is_greater_than(2)
-
-  outlier <-
-    sdres %>%
-    extract(sdres_out)
-
-  obs <-
-    sdres %>%
-    length() %>%
-    seq_len(.)
-
-  tibble(obs = obs, sdres = sdres) %>%
-    mutate(
-      color = ifelse(((sdres >= 2) | (sdres <= -2)), c("outlier"), c("normal")),
-      fct_color = color %>%
-        factor() %>%
-        ordered(levels = c("normal", "outlier")),
-      txt = ifelse(color == "outlier", obs, NA)
-    )
+  return(out)
 
 }

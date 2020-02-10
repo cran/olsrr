@@ -5,13 +5,15 @@
 \alias{ols_dfbetas_panel}
 \title{DFBETAs panel}
 \usage{
-ols_plot_dfbetas(model)
+ols_plot_dfbetas(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
-list; \code{ols_plot_dfbetas} returns a list of tibbles (for intercept and each predictor)
+list; \code{ols_plot_dfbetas} returns a list of \code{data.frame} (for intercept and each predictor)
 with the observation number and DFBETA of observations that exceed the threshold for classifying
 an observation as an outlier/influential observation.
 }

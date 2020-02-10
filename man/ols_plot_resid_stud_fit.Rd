@@ -5,16 +5,18 @@
 \alias{ols_dsrvsp_plot}
 \title{Deleted studentized residual vs fitted values plot}
 \usage{
-ols_plot_resid_stud_fit(model)
+ols_plot_resid_stud_fit(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
 \code{ols_plot_resid_stud_fit} returns  a list containing the
 following components:
 
-\item{outliers}{a tibble with observation number, fitted values and deleted studentized
+\item{outliers}{a \code{data.frame} with observation number, fitted values and deleted studentized
 residuals that exceed the \code{threshold} for classifying observations as
 outliers/influential observations}
 \item{threshold}{\code{threshold} for classifying an observation as an outlier/influential observation}

@@ -1,4 +1,3 @@
-#' @importFrom shiny runApp
 #' @title Launch shiny app
 #' @description Launches shiny app for interactive model building.
 #' @examples
@@ -8,5 +7,10 @@
 #' @export
 #'
 ols_launch_app <- function() {
-  runApp(appDir = system.file("application", package = "olsrr"))
+
+	message("`ols_launch_app()` has been soft-deprecated and will be removed in the next release. In future, to launch the app, run the below code:\n\n - install.packages('xplorerr')\n - xplorerr::app_linear_regression()\n")
+
+	check_suggests('xplorerr')
+	xplorerr::app_linear_regression()
 }
+ 

@@ -6,9 +6,11 @@
 #' manner until there is no variable left to enter any more.
 #'
 #' @param model An object of class \code{lm}.
+#' @param progress Logical; if \code{TRUE}, will display variable selection progress.
 #' @param details Logical; if \code{TRUE}, will print the regression result at
 #'   each step.
 #' @param x An object of class \code{ols_step_forward_aic}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #' @param ... Other arguments.
 #' @return \code{ols_step_forward_aic} returns an object of class \code{"ols_step_forward_aic"}.
 #' An object of class \code{"ols_step_forward_aic"} is a list containing the
@@ -42,7 +44,6 @@
 #' # final model
 #' k$model
 #'
-#' @importFrom dplyr desc
 #'
 #' @family variable selection procedures
 #'
@@ -53,18 +54,17 @@ ols_step_forward_aic <- function(model, ...) UseMethod("ols_step_forward_aic")
 #' @export
 #' @rdname ols_step_forward_aic
 #'
-ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
+ols_step_forward_aic.default <- function(model, progress = FALSE, details = FALSE, ...) {
+
+  if (details) {
+    progress <- TRUE
+  }
 
   check_model(model)
   check_logic(details)
   check_npredictors(model, 3)
 
-  response <-
-    model %>%
-    use_series(model) %>%
-    names() %>%
-    extract(1)
-
+  response <- names(model$model)[1]
   l        <- mod_sel_data(model)
   nam      <- coeff_names(model)
   all_pred <- nam
@@ -79,16 +79,18 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
   mo       <- lm(paste(response, "~", 1), data = l)
   aic1     <- ols_aic(mo)
 
-  cat(format("Forward Selection Method", justify = "left", width = 24), "\n")
-  cat(rep("-", 24), sep = "", "\n\n")
-  cat(format("Candidate Terms:", justify = "left", width = 16), "\n\n")
-  for (i in seq_len(length(nam))) {
-    cat(paste(i, ".", nam[i]), "\n")
-  }
-  cat("\n")
+  if (progress) {
+    cat(format("Forward Selection Method", justify = "left", width = 24), "\n")
+    cat(rep("-", 24), sep = "", "\n\n")
+    cat(format("Candidate Terms:", justify = "left", width = 16), "\n\n")
+    for (i in seq_len(length(nam))) {
+      cat(paste(i, ".", nam[i]), "\n")
+    }
+    cat("\n")
 
-  if (details == TRUE) {
-    cat(" Step 0: AIC =", aic1, "\n", paste(response, "~", 1, "\n\n"))
+    if (details == TRUE) {
+      cat(" Step 0: AIC =", aic1, "\n", paste(response, "~", 1, "\n\n"))
+    }
   }
 
   for (i in seq_len(mlen_p)) {
@@ -104,9 +106,9 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
   }
 
   da <- data.frame(predictors = all_pred, aics = aics, ess = ess, rss = rss, rsq = rsq, arsq = arsq)
-  da2 <- arrange(da, desc(rss))
+  da2 <- da[order(-da$rss), ]
 
-  if (details == TRUE) {
+  if (details) {
     w1 <- max(nchar("Predictor"), nchar(all_pred))
     w2 <- 2
     w3 <- max(nchar("AIC"), nchar(format(round(aics, 3), nsmall = 3)))
@@ -149,15 +151,19 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
   len_p    <- length(all_pred)
   step     <- 1
 
-  cat("\n")
-  if (!details) {
-    cat("Variables Entered:", "\n\n")
+  if (progress) {
+    cat("\n")
+    if (!details) {
+      cat("Variables Entered:", "\n\n")
+    }
   }
 
-  if (interactive()) {
-    cat(crayon::green(clisymbols::symbol$tick), crayon::bold(dplyr::last(preds)), "\n")
-  } else {
-    cat(paste("-", dplyr::last(preds)), "\n")
+  if (progress) {
+    if (interactive()) {
+      cat("+", tail(preds, n = 1), "\n")
+    } else {
+      cat(paste("-", tail(preds, n = 1)), "\n")
+    }
   }
 
   while (step < mlen_p) {
@@ -172,7 +178,7 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
                             paste(preds, collapse = " + ")), data = l)
     aic1 <- ols_aic(mo$model)
 
-    if (details == TRUE) {
+    if (details) {
       cat("\n\n", "Step", step, ": AIC =", aic1, "\n", paste(response, "~", paste(preds, collapse = " + "), "\n\n"))
     }
 
@@ -190,10 +196,11 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
       arsq[i] <- k$adjr
     }
 
-    if (details == TRUE) {
+    if (details) {
 
       da  <- data.frame(predictors = all_pred, aics = aics, ess = ess, rss = rss, rsq = rsq, arsq = arsq)
-      da2 <- arrange(da, desc(rss))
+      # da2 <- arrange(da, desc(rss))
+      da2 <- da[order(-da$rss), ]
       w1  <- max(nchar("Predictor"), nchar(as.character(da2$predictors)))
       w2  <- 2
       w3  <- max(nchar("AIC"), nchar(format(round(aics, 3), nsmall = 3)))
@@ -244,29 +251,35 @@ ols_step_forward_aic.default <- function(model, details = FALSE, ...) {
       len_p    <- length(all_pred)
       step     <- step + 1
 
-      if (interactive()) {
-        cat(crayon::green(clisymbols::symbol$tick), crayon::bold(dplyr::last(preds)), "\n")
-      } else {
-        cat(paste("-", dplyr::last(preds)), "\n")
+      if (progress) {
+        if (interactive()) {
+          cat("+", tail(preds, n = 1), "\n")
+        } else {
+          cat(paste("-", tail(preds, n = 1)), "\n")
+        }
       }
     } else {
-      cat("\n")
-      cat(crayon::bold$red("No more variables to be added."))
+      if (progress) {
+        cat("\n")
+        cat("No more variables to be added.")
+      }
       break
     }
   }
 
-  if (details == TRUE) {
+  if (details) {
     cat("\n\n")
     cat("Variables Entered:", "\n\n")
     for (i in seq_len(length(preds))) {
       if (interactive()) {
-        cat(crayon::green(clisymbols::symbol$tick), crayon::bold(preds[i]), "\n")
+        cat("+", preds[i], "\n")
       } else {
         cat(paste("-", preds[i]), "\n")
       }
     }
+  }
 
+  if (progress) {
     cat("\n\n")
     cat("Final Model Output", "\n")
     cat(rep("-", 18), sep = "", "\n\n")
@@ -305,7 +318,7 @@ print.ols_step_forward_aic <- function(x, ...) {
 #' @rdname ols_step_forward_aic
 #' @export
 #'
-plot.ols_step_forward_aic <- function(x, ...) {
+plot.ols_step_forward_aic <- function(x, print_plot = TRUE, ...) {
 
   aic <- NULL
   tx  <- NULL
@@ -317,31 +330,27 @@ plot.ols_step_forward_aic <- function(x, ...) {
   yloc <- x$aics - 0.2
   xmin <- min(y) - 1
   xmax <- max(y) + 1
-
-  ymin <-
-    x %>%
-    use_series(aic) %>%
-    min() %>%
-    subtract(1)
-
-  ymax <-
-    x %>%
-    use_series(aic) %>%
-    max() %>%
-    add(1)
-
+  ymin <- min(x$aic) - 1
+  ymax <- max(x$aic) + 1
+  
   predictors <- x$predictors
 
-  d2 <- tibble(x = xloc, y = yloc, tx = predictors)
-  d  <- tibble(a = y, b = x$aics)
+  d2 <- data.frame(x = xloc, y = yloc, tx = predictors)
+  d  <- data.frame(a = y, b = x$aics)
 
-  p <- ggplot(d, aes(x = a, y = b)) + geom_line(color = "blue") +
+  p <-
+    ggplot(d, aes(x = a, y = b)) + geom_line(color = "blue") +
     geom_point(color = "blue", shape = 1, size = 2) + xlim(c(xmin, xmax)) +
     ylim(c(ymin, ymax)) + xlab("Step") + ylab("AIC") +
     ggtitle("Stepwise AIC Forward Selection") +
     geom_text(data = d2, aes(x = x, y = y, label = tx), hjust = 0, nudge_x = 0.1)
 
-  print(p)
+  if (print_plot) {
+    print(p)
+  } else {
+    return(p)
+  }
+
 }
 
 

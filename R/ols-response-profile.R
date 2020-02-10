@@ -3,6 +3,7 @@
 #' Panel of plots to explore and visualize the response variable.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @section Deprecated Function:
 #' \code{ols_resp_viz()} has been deprecated. Instead use \code{ols_plot_response()}.
@@ -16,34 +17,23 @@
 #'
 #' @export
 #'
-ols_plot_response <- function(model) {
+ols_plot_response <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
   x <- NULL
   y <- NULL
 
-  nam <-
-    model %>%
-    model.frame() %>%
-    names()
+  nam       <- names(model.frame(model))
+  predictor <- model.response(model.frame(model))
+  xval      <- seq_len(length(predictor))
+  d1        <- data.frame(x = predictor)
 
-  predictor <-
-    model %>%
-    model.frame() %>%
-    model.response()
-
-  xval <-
-    predictor %>%
-    length() %>%
-    seq_len(.)
-
-  d1 <- tibble(x = predictor)
   p1 <- ggplot(d1, aes(x = x)) +
     geom_dotplot(binwidth = 1, fill = "blue") +
     xlab(nam[1]) + ggtitle(paste("Dot Plot of", nam[1]))
 
-  d2 <- tibble(x = xval, y = predictor)
+  d2 <- data.frame(x = xval, y = predictor)
   p2 <- ggplot(d2, aes(x = x, y = y)) +
     geom_point(color = "blue") +
     geom_line(color = "blue") +
@@ -51,23 +41,29 @@ ols_plot_response <- function(model) {
     ggtitle(paste("Trend Plot of", nam[1]))
 
 
-  d3 <- tibble(x = predictor)
+  d3 <- data.frame(x = predictor)
   p3 <- ggplot(d3, aes(x = x)) +
     geom_histogram(bins = 5, color = "black", fill = "blue") +
     xlab(nam[1]) + ggtitle(paste("Histogram of", nam[1]))
 
 
-  d4 <- tibble(x = predictor)
+  d4 <- data.frame(x = predictor)
   p4 <- ggplot(d4, aes(x = factor(0), y = x)) +
     geom_boxplot(fill = "blue") +
     xlab("") + ylab(nam[1]) +
     ggtitle(paste("Boxplot of", nam[1])) +
     theme(axis.text.x = element_blank())
 
-  grid.arrange(p1, p2, p3, p4, ncol = 2, top = "Response Diagnostics")
-
-  result <- list(dot_plot = p1, trend_plot = p2, histogram = p3, boxplot = p4)
-  invisible(result)
+  if (print_plot) {
+    grid.arrange(p1, p2, p3, p4, ncol = 2, top = "Response Diagnostics")
+  } else {
+    return(
+      list(dot_plot   = p1,
+           trend_plot = p2,
+           histogram  = p3,
+           boxplot    = p4)
+      )
+  }
 
 }
 

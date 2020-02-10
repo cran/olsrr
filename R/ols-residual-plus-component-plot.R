@@ -6,6 +6,7 @@
 #' suggest possible transformations for linearizing the data.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @references
 #' Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
@@ -24,7 +25,7 @@
 #'
 #' @export
 #'
-ols_plot_comp_plus_resid <- function(model) {
+ols_plot_comp_plus_resid <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
@@ -44,51 +45,32 @@ ols_plot_comp_plus_resid <- function(model) {
     myplots[[i]] <- p
   }
 
-  result <- marrangeGrob(myplots, nrow = 2, ncol = 2)
-  result
+  if (print_plot) {
+    marrangeGrob(myplots, nrow = 2, ncol = 2)
+  } else {
+    return(myplots)
+  }
 
 }
 
 
 cpdata <- function(data, mc, e, i) {
 
-  x <- pull(data, i)
+  x <- data[[i]]
+  y <- ((mc[i] * data[i]) + e)[[1]]
 
-  y <-
-    mc %>%
-    extract(i) %>%
-    multiply_by((data %>%
-                  select(i))) %>%
-    add(e) %>%
-    pull(1)
-
-  tibble(x = x, y = y)
+  data.frame(x = x, y = y)
 
 }
 
 cpout <- function(model) {
 
-  e <- residuals(model)
-
-  mc <-
-    model %>%
-    coefficients() %>%
-    extract(-1)
-
-  data <-
-    model %>%
-    model.matrix() %>%
-    as_data_frame() %>%
-    select(-1)
-
-  lmc <- length(mc)
-  nam <- names(data)
-
-  indvar <-
-    model %>%
-    model.frame() %>%
-    names() %>%
-    extract(1)
+  e      <- residuals(model)
+  mc     <- coefficients(model)[-1]
+  data   <- as.data.frame(model.matrix(model))[, -1]
+  lmc    <- length(mc)
+  nam    <- names(data)
+  indvar <- names(model.frame(model))[1]
 
   list(e      = e,
        mc     = mc,

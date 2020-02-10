@@ -59,10 +59,6 @@
 #' # if model includes interaction terms set iterm to TRUE
 #' ols_regress(mpg ~ disp * wt, data = mtcars, iterm = TRUE)
 #'
-#' @importFrom stringr str_detect
-#' @importFrom magrittr %>% extract
-#' @importFrom rlang is_formula
-#'
 #' @export
 #'
 ols_regress <- function(object, ...) UseMethod("ols_regress")
@@ -74,8 +70,6 @@ ols_regress.default <- function(object, data, conf.level = 0.95,
   if (missing(data)) {
     stop("data missing", call. = FALSE)
   }
-
-  check_data(data)
 
   if (!is.numeric(conf.level)) {
     stop("conf.level must be numeric", call. = FALSE)
@@ -92,13 +86,10 @@ ols_regress.default <- function(object, data, conf.level = 0.95,
   }
 
   # detect if model formula includes interaction terms
-  if (is_formula(object)) {
-    detect_iterm <- object %>%
-      str_detect(pattern = "\\*") %>%
-      extract(3)
+  if (inherits(object, "formula")) {
+    detect_iterm <- grepl(object, pattern = "\\*")[3]
   } else {
-    detect_iterm <- object %>%
-      str_detect(pattern = "\\*")
+    detect_iterm <-  grepl(object, pattern = "\\*")
   }
 
   # set interaction to TRUE if formula contains interaction terms

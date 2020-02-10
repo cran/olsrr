@@ -1,10 +1,7 @@
 ## ---- echo=FALSE, message=FALSE------------------------------------------
 library(olsrr)
-library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(purrr)
-library(tibble)
 library(nortest)
 library(goftest)
 
@@ -42,7 +39,7 @@ ols_plot_diagnostics(model)
 
 ## ----rvsrplot, fig.width=5, fig.height=5, fig.align='center'-------------
 model <- lm(mpg ~ disp + hp + wt, data = mtcars)
-ols_plot_resid_regressor(model, drat)
+ols_plot_resid_regressor(model, 'drat')
 
 ## ----avplot, fig.width=10, fig.height=10, fig.align='center'-------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)

@@ -22,11 +22,8 @@ The olsrr package provides following tools for teaching and learning OLS regress
 
 ```{r, echo=FALSE, message=FALSE}
 library(olsrr)
-library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(purrr)
-library(tibble)
 library(nortest)
 library(goftest)
 ```

@@ -3,6 +3,7 @@
 #' Plot for detecting influential observations using DFFITs.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details
 #' DFFIT - difference in fits, is used to identify influential data points. It
@@ -25,7 +26,7 @@
 #' @return \code{ols_plot_dffits} returns  a list containing the
 #' following components:
 #'
-#' \item{outliers}{a tibble with observation number and \code{DFFITs} that exceed \code{threshold}}
+#' \item{outliers}{a \code{data.frame} with observation number and \code{DFFITs} that exceed \code{threshold}}
 #' \item{threshold}{\code{threshold} for classifying an observation as an outlier}
 #'
 #' @references
@@ -48,35 +49,19 @@
 #'
 #' @export
 #'
-ols_plot_dffits <- function(model) {
+ols_plot_dffits <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  dbetas <- NULL
-  obs    <- NULL
-  txt    <- NULL
-
-  dffitsm <-
-    model %>%
-    dffits() %>%
-    unlist()
-
-  k <- model_n_coeffs(model)
-  n <- model_rows(model)
-
-  dffits_t <-
-    k %>%
-    divide_by(n) %>%
-    sqrt(.) %>%
-    multiply_by(2)
-
-  title <-
-    model %>%
-    model.frame() %>%
-    names() %>%
-    extract(1)
-
-  dfits_data <- tibble(obs = seq_len(n), dbetas = dffitsm)
+  dbetas     <- NULL
+  obs        <- NULL
+  txt        <- NULL
+  dffitsm    <- unlist(dffits(model))
+  k          <- model_n_coeffs(model)
+  n          <- model_rows(model)
+  dffits_t   <- sqrt(k / n) * 2
+  title      <- names(model.frame(model))[1]
+  dfits_data <- data.frame(obs = seq_len(n), dbetas = dffitsm)
   d          <- ols_prep_dfbeta_data(dfits_data, dffits_t)
   f          <- ols_prep_dfbeta_outliers(d)
 
@@ -94,10 +79,12 @@ ols_plot_dffits <- function(model) {
       label = paste("Threshold:", round(dffits_t, 2))
     )
 
-  suppressWarnings(print(p))
-  colnames(f) <- c("observation", "dffits")
-  result <- list(outliers = f, threshold = round(dffits_t, 2), plot = p)
-  invisible(result)
+  if (print_plot) {
+    suppressWarnings(print(p))
+  } else {
+    colnames(f) <- c("observation", "dffits")
+    return(list(plot = p, outliers = f, threshold = round(dffits_t, 2)))
+  }
 
 }
 

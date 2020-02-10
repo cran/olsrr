@@ -1,10 +1,7 @@
 ## ---- echo=FALSE, message=FALSE------------------------------------------
 library(olsrr)
-library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(purrr)
-library(tibble)
 library(nortest)
 library(goftest)
 

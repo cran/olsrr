@@ -55,54 +55,28 @@ print.ols_correlations <- function(x, ...) {
   print_correlations(x)
 }
 
-#' @importFrom tibble as_data_frame
-#' @importFrom purrr map_df
+
 cordata <- function(model) {
-
   ols_prep_avplot_data(model)
-
 }
 
 cmdata <- function(mdata) {
-
-  mdata %>%
-    cor() %>%
-    `[`(-1, 1)
-
+  cor(mdata)[-1, 1]
 }
 
 rtwo <- function(i, mdata) {
-
-  dat <-
-    mdata %>%
-    select(-1, -i)
-
-  lm(mdata[[1]] ~ ., data = dat) %>%
-    summary() %>%
-    extract2(8)
-
+  dat <- mdata[, c(-1, -i)]
+  summary(lm(mdata[[1]] ~ ., data = dat))[[8]]
 }
 
 corsign <- function(model) {
-
-  model %>%
-    summary() %>%
-    use_series(coefficients) %>%
-    `[`(, 1) %>%
-    extract(-1) %>%
-    sign(.)
-
+  sign(summary(model)$coefficients[-1, 1])
 }
 
 corout <- function(model, r2) {
 
-  r.squared <- NULL
-
-  r1  <-
-    model %>%
-    summary() %>%
-    use_series(r.squared)
-
+  r.squared        <- NULL
+  r1               <- summary(model)$r.squared
   mdata            <- cordata(model)
   cor_mdata        <- cmdata(mdata)
   n                <- ncol(mdata)

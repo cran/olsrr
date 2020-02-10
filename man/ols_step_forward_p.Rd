@@ -9,10 +9,11 @@
 \usage{
 ols_step_forward_p(model, ...)
 
-\method{ols_step_forward_p}{default}(model, penter = 0.3, details = FALSE,
-  ...)
+\method{ols_step_forward_p}{default}(model, penter = 0.3,
+  progress = FALSE, details = FALSE, ...)
 
-\method{plot}{ols_step_forward_p}(x, model = NA, ...)
+\method{plot}{ols_step_forward_p}(x, model = NA, print_plot = TRUE,
+  ...)
 }
 \arguments{
 \item{model}{An object of class \code{lm}; the model should include all
@@ -23,10 +24,14 @@ candidate predictor variables.}
 \item{penter}{p value; variables with p value less than \code{penter} will
 enter into the model}
 
+\item{progress}{Logical; if \code{TRUE}, will display variable selection progress.}
+
 \item{details}{Logical; if \code{TRUE}, will print the regression result at
 each step.}
 
 \item{x}{An object of class \code{ols_step_forward_p}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
 \code{ols_step_forward_p} returns an object of class \code{"ols_step_forward_p"}.
@@ -83,3 +88,4 @@ Other variable selection procedures: \code{\link{ols_step_all_possible}},
   \code{\link{ols_step_both_aic}},
   \code{\link{ols_step_forward_aic}}
 }
+\concept{variable selection procedures}

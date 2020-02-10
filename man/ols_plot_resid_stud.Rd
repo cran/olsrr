@@ -5,16 +5,18 @@
 \alias{ols_srsd_plot}
 \title{Studentized residual plot}
 \usage{
-ols_plot_resid_stud(model)
+ols_plot_resid_stud(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \value{
 \code{ols_plot_resid_stud} returns  a list containing the
 following components:
 
-\item{outliers}{a tibble with observation number and \code{studentized residuals} that
+\item{outliers}{a \code{data.frame} with observation number and \code{studentized residuals} that
 exceed \code{threshold}} for classifying an observation as an outlier
 \item{threshold}{\code{threshold} for classifying an observation as an outlier}
 }

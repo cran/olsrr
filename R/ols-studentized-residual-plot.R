@@ -3,6 +3,7 @@
 #' Graph for identifying outliers.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details
 #' Studentized deleted residuals (or externally studentized residuals) is the
@@ -15,7 +16,7 @@
 #' @return \code{ols_plot_resid_stud} returns  a list containing the
 #' following components:
 #'
-#' \item{outliers}{a tibble with observation number and \code{studentized residuals} that
+#' \item{outliers}{a \code{data.frame} with observation number and \code{studentized residuals} that
 #' exceed \code{threshold}} for classifying an observation as an outlier
 #' \item{threshold}{\code{threshold} for classifying an observation as an outlier}
 #'
@@ -32,7 +33,7 @@
 #'
 #' @export
 #'
-ols_plot_resid_stud <- function(model) {
+ols_plot_resid_stud <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
@@ -42,22 +43,14 @@ ols_plot_resid_stud <- function(model) {
   dsr       <- NULL
   txt       <- NULL
 
-  g <- ols_prep_srplot_data(model)
+  g           <- ols_prep_srplot_data(model)
+  d           <- g$dsr
+  d$txt       <- ifelse(d$color == "outlier", d$obs, NA)
+  f           <- d[color == "outlier", c("obs", "dsr")] 
+  colnames(f) <- c("observation", "stud_resid")
 
-  d <-
-    g %>%
-    use_series(dsr) %>%
-    mutate(
-      txt = ifelse(color == "outlier", obs, NA)
-    )
-
-  f <-
-    d %>%
-    filter(color == "outlier") %>%
-    select(obs, dsr) %>%
-    set_colnames(c("observation", "stud_resid"))
-
-  p <- ggplot(d, aes(x = obs, y = dsr, label = txt)) +
+  p <-
+    ggplot(d, aes(x = obs, y = dsr, label = txt)) +
     geom_bar(width = 0.5, stat = "identity", aes(fill = fct_color)) +
     scale_fill_manual(values = c("blue", "red")) + xlab("Observation") +
     ylab("Deleted Studentized Residuals") + labs(fill = "Observation") +
@@ -71,9 +64,15 @@ ols_plot_resid_stud <- function(model) {
       label = paste0("Threshold: abs(", 3, ")")
     )
 
-  suppressWarnings(print(p))
-  result <- list(outliers = f, threshold = 3, plot = p)
-  invisible(result)
+  if (print_plot) {
+    suppressWarnings(print(p))
+  } else {
+    return(
+      list(plot = p,
+           outliers = f,
+           threshold = 3)
+      )
+  }
 
 }
 

@@ -3,6 +3,7 @@
 #' Plot of observed vs fitted values to assess the fit of the model.
 #'
 #' @param model An object of class \code{lm}.
+#' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details
 #' Ideally, all your points should be close to a regressed diagonal line. Draw
@@ -23,22 +24,17 @@
 #'
 #' @export
 #'
-ols_plot_obs_fit <- function(model) {
+ols_plot_obs_fit <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  x <- NULL
-  y <- NULL
+  x     <- NULL
+  y     <- NULL
+  oname <- names(model.frame(model))[1]
+  d     <- obspred(model)
 
-  oname <-
-    model %>%
-    model.frame() %>%
-    names() %>%
-    extract(1)
-
-  d <- obspred(model)
-
-  p <- ggplot(d, aes(x = x, y = y)) +
+  p <-
+    ggplot(d, aes(x = x, y = y)) +
     geom_point(color = "blue", shape = 1) +
     ylab("Fitted Value") + xlab(paste(oname)) +
     ggtitle(paste("Actual vs Fitted for", oname)) +
@@ -46,7 +42,11 @@ ols_plot_obs_fit <- function(model) {
     geom_segment(data = d, aes(x = min(x), y = min(y), xend = max(x),
                                yend = max(y)), colour = "red")
 
-  print(p)
+  if (print_plot) {
+    print(p)
+  } else {
+    return(p)
+  }
 
 }
 
@@ -62,11 +62,7 @@ ols_ovsp_plot <- function(model) {
 obspred <- function(model) {
 
   y <- fitted(model)
-  x <-
-    model %>%
-    model.frame() %>%
-    extract2(1)
-
-  tibble(x, y)
+  x <- model.frame(model)[[1]]
+  data.frame(x, y)
 
 }

@@ -5,10 +5,12 @@
 \alias{ols_rsd_qqplot}
 \title{Residual QQ plot}
 \usage{
-ols_plot_resid_qq(model)
+ols_plot_resid_qq(model, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
 \description{
 Graph for detecting violation of normality assumption.
@@ -30,3 +32,4 @@ Other residual diagnostics: \code{\link{ols_plot_resid_box}},
   \code{\link{ols_test_correlation}},
   \code{\link{ols_test_normality}}
 }
+\concept{residual diagnostics}

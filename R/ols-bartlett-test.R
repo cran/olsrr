@@ -31,12 +31,11 @@
 #' @examples
 #' # using grouping variable
 #' library(descriptr)
-#' ols_test_bartlett(mtcarz, mpg, group_var = cyl)
+#' ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
 #'
 #' # using variables
-#' ols_test_bartlett(hsb, read, write)
+#' ols_test_bartlett(hsb, 'read', 'write')
 #'
-#' @importFrom rlang quo_is_null quos
 #' @importFrom stats pchisq formula
 #' @useDynLib olsrr, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
@@ -50,56 +49,33 @@ ols_test_bartlett <- function(data, ...) UseMethod("ols_test_bartlett")
 #'
 ols_test_bartlett.default <- function(data, ..., group_var = NULL) {
 
-  check_data(data)
+  groupvar  <- group_var
+  varyables <- unlist(list(...))
+  fdata     <- data[varyables]
+  var_c     <- names(fdata)
 
-  groupvar  <- enquo(group_var)
-  varyables <- quos(...)
-
-  fdata <-
-    data %>%
-    select(!!! varyables)
-
-  var_c <- names(fdata)
-
-  if (quo_is_null(groupvar)) {
+  if (is.null(groupvar)) {
 
     z  <- as.list(fdata)
-    ln <- map_int(z, length)
-
-    ly <-
-      z %>%
-      length() %>%
-      seq_len(.)
-
+    ln <- unname(unlist(lapply(z, length)))
+    ly <- seq_len(length(z))
+  
     if (length(z) < 2) {
       stop("Please specify at least two variables.", call. = FALSE)
     }
 
-    out   <- gvar(ln, ly)
-    fdata <- unlist(z)
-
-    groupvars <-
-      out %>%
-      unlist() %>%
-      as.factor()
-
+    out       <- gvar(ln, ly)
+    fdata     <- unlist(z)
+    groupvars <- as.factor(unlist(out))
+  
     g_var <- NULL
 
   } else {
 
-    fdata <-
-      fdata %>%
-      pull(1)
-
-    groupvars <-
-      data %>%
-      pull(!! groupvar)
-
-    g_var <-
-      data %>%
-      select(!! groupvar) %>%
-      names()
-
+    fdata     <- fdata[[1]]
+    groupvars <- data[[groupvar]]
+    g_var     <- names(data[groupvar])
+     
     if (length(fdata) != length(groupvars)) {
       stop("Length of variable and group_var do not match.", call. = FALSE)
     }
