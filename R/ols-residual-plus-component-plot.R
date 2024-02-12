@@ -14,9 +14,6 @@
 #' Kutner, MH, Nachtscheim CJ, Neter J and Li W., 2004, Applied Linear Statistical Models (5th edition).
 #' Chicago, IL., McGraw Hill/Irwin.
 #'
-#' @section Deprecated Function:
-#' \code{ols_rpc_plot()} has been deprecated. Instead use \code{ols_plot_comp_plus_resid()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_plot_comp_plus_resid(model)
@@ -29,24 +26,28 @@ ols_plot_comp_plus_resid <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  x <- NULL
-  y <- NULL
-
   pl      <- cpout(model)
   myplots <- list()
 
   for (i in seq_len(pl$lmc)) {
     k <- cpdata(pl$data, pl$mc, pl$e, i)
-    p <- eval(substitute(ggplot(k, aes(x = x, y = y)) +
-      geom_point(colour = "blue", size = 2) + xlab(pl$nam[i]) +
-      ylab(paste0("Residual + Component (", pl$indvar, ")")) +
-      stat_smooth(method = "lm", se = FALSE), list(i = i)))
+    p <-
+      eval(
+        substitute(
+          ggplot(k, aes(x = x, y = y)) +
+          geom_point(colour = "blue", size = 2) +
+          stat_smooth(method = "lm", se = FALSE) +
+          xlab(pl$nam[i]) +
+          ylab(paste0("Residual + Component (", pl$indvar, ")")),
+          list(i = i)
+        )
+      )
 
     myplots[[i]] <- p
   }
 
   if (print_plot) {
-    marrangeGrob(myplots, nrow = 2, ncol = 2)
+    marrangeGrob(myplots, nrow = 2, ncol = 2, top = "Residual Plus Component Plot")
   } else {
     return(myplots)
   }
@@ -58,7 +59,6 @@ cpdata <- function(data, mc, e, i) {
 
   x <- data[[i]]
   y <- ((mc[i] * data[i]) + e)[[1]]
-
   data.frame(x = x, y = y)
 
 }
@@ -72,20 +72,6 @@ cpout <- function(model) {
   nam    <- names(data)
   indvar <- names(model.frame(model))[1]
 
-  list(e      = e,
-       mc     = mc,
-       data   = data,
-       lmc    = lmc,
-       nam    = nam,
-       indvar = indvar)
+  list(e = e, mc = mc, data = data, lmc = lmc, nam = nam, indvar = indvar)
 
-}
-
-
-#' @export
-#' @rdname ols_plot_comp_plus_resid
-#' @usage NULL
-#'
-ols_rpc_plot <- function(model) {
-  .Deprecated("ols_plot_comp_plus_resid()")
 }

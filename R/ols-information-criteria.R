@@ -7,6 +7,8 @@
 #' @param method A character vector; specify the method to compute AIC. Valid
 #'   options include R, STATA and SAS.
 #'
+#' @param corrected Logical; if \code{TRUE}, returns corrected akaike information criterion for SAS method.
+#'
 #' @details
 #' AIC provides a means for model selection. Given a collection of models for
 #' the data, AIC estimates the quality of each model, relative to each of the
@@ -18,6 +20,9 @@
 #'
 #' \emph{SAS}
 #' \deqn{AIC = n * ln(SSE / n) + 2p}
+#'
+#' \emph{corrected}
+#' \deqn{AIC = n * ln(SSE / n) + ((n * (n + p)) / (n - p - 2))}
 #'
 #' where \emph{n} is the sample size and \emph{p} is the number of model parameters including intercept.
 #'
@@ -43,17 +48,26 @@
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_aic(model, method = 'SAS')
 #'
+#' # corrected akaike information criterion
+#' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
+#' ols_aic(model, method = 'SAS', corrected = TRUE)
+#'
 #' @family model selection criteria
 #'
 #' @importFrom stats logLik
 #'
 #' @export
 #'
-ols_aic <- function(model, method = c("R", "STATA", "SAS")) {
+ols_aic <- function(model, method = c("R", "STATA", "SAS"), corrected = FALSE) {
 
   check_model(model)
 
   method <- match.arg(method)
+
+  if (method != "SAS") {
+    corrected <- FALSE
+  }
+
   n      <- model_rows(model)
   p      <- model_n_coeffs(model)
 
@@ -67,16 +81,17 @@ ols_aic <- function(model, method = c("R", "STATA", "SAS")) {
     lk <- logLik(model)
     -2 * lk[1] + 2 * p
 
-  } else if (method == "SAS") {
-
-    sse <- model_rss(model)
-    n * log(sse / n) + 2 * p
-
   } else {
 
-    message("Please specify a valid method.")
+    sse <- model_rss(model)
 
-  }
+    if (corrected) {
+      (n * log(sse / n)) + ((n * (n + p)) / (n - p - 2))
+    } else {
+      (n * log(sse / n)) + (2 * p)
+    }
+    
+  } 
 
 }
 
@@ -146,16 +161,12 @@ ols_sbc <- function(model, method = c("R", "STATA", "SAS")) {
     lk <- logLik(model)
     -2 * lk[1] + log(n) * p
 
-  } else if (method == "SAS") {
+  } else {
 
     sse <- model_rss(model)
     n * log(sse / n) + p * log(n)
 
-  } else {
-
-    message("Please specify a valid method.")
-
-  }
+  } 
 }
 
 
@@ -300,8 +311,8 @@ ols_mallows_cp <- function(model, fullmodel) {
   check_model(fullmodel)
 
   n <- model_rows(model)
-  p <- anova_coeffs(model)
-  q <- full_model_coeffs(fullmodel)
+  p <- model_n_coeffs(model)
+  q <- model_n_coeffs(fullmodel)
 
   mcpout(model, fullmodel, n, p, q)
 
@@ -463,7 +474,7 @@ jpout <- function(model) {
 #' @details
 #' Amemiya's Prediction Criterion penalizes R-squared more heavily than does
 #' adjusted R-squared for each addition degree of freedom used on the
-#' right-hand-side of the equation.  The higher the better for this criterion.
+#' right-hand-side of the equation.  The lower the better for this criterion.
 #'
 #' \deqn{((n + p) / (n - p))(1 - (R^2))}
 #'

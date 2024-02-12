@@ -3,7 +3,6 @@
 \name{ols_test_bartlett}
 \alias{ols_test_bartlett}
 \alias{ols_test_bartlett.default}
-\alias{ols_bartlett_test}
 \title{Bartlett test}
 \usage{
 ols_test_bartlett(data, ...)
@@ -34,15 +33,12 @@ Bartlett's test is used to test if variances across samples is equal.
 It is sensitive to departures from normality. The Levene test
 is an alternative test that is less sensitive to departures from normality.
 }
-\section{Deprecated Function}{
-
-\code{ols_bartlett_test()} has been deprecated. Instead use \code{ols_test_bartlett()}.
-}
-
 \examples{
 # using grouping variable
-library(descriptr)
-ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
+if (require("descriptr")) {
+  library(descriptr)
+  ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
+}
 
 # using variables
 ols_test_bartlett(hsb, 'read', 'write')
@@ -53,7 +49,9 @@ Snedecor, George W. and Cochran, William G. (1989), Statistical Methods,
 Eighth Edition, Iowa State University Press.
 }
 \seealso{
-Other heteroskedasticity tests: \code{\link{ols_test_breusch_pagan}},
-  \code{\link{ols_test_f}}, \code{\link{ols_test_score}}
+Other heteroskedasticity tests: 
+\code{\link{ols_test_breusch_pagan}()},
+\code{\link{ols_test_f}()},
+\code{\link{ols_test_score}()}
 }
 \concept{heteroskedasticity tests}

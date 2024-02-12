@@ -2,13 +2,14 @@
 % Please edit documentation in R/ols-studentized-residual-plot.R
 \name{ols_plot_resid_stud}
 \alias{ols_plot_resid_stud}
-\alias{ols_srsd_plot}
 \title{Studentized residual plot}
 \usage{
-ols_plot_resid_stud(model, print_plot = TRUE)
+ols_plot_resid_stud(model, threshold = NULL, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{threshold}{Threshold for detecting outliers. Default is 3.}
 
 \item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
@@ -31,16 +32,12 @@ observations than standardized residuals. If an observation has an externally
 studentized residual that is larger than 3 (in absolute value) we can call
 it an outlier.
 }
-\section{Deprecated Function}{
-
-\code{ols_srsd_plot()} has been deprecated. Instead use \code{ols_plot_resid_stud()}.
-}
-
 \examples{
 model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 ols_plot_resid_stud(model)
+ols_plot_resid_stud(model, threshold = 2)
 
 }
 \seealso{
-[ols_plot_resid_stand()]
+\code{\link[=ols_plot_resid_stand]{ols_plot_resid_stand()}}
 }

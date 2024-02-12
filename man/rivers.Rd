@@ -4,11 +4,13 @@
 \name{rivers}
 \alias{rivers}
 \title{Test Data Set}
-\format{An object of class \code{data.frame} with 20 rows and 6 columns.}
+\format{
+An object of class \code{data.frame} with 20 rows and 6 columns.
+}
 \usage{
 rivers
 }
 \description{
 Test Data Set
 }
-\keyword{datasets}
+\keyword{internal}

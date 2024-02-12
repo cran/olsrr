@@ -2,12 +2,16 @@
 % Please edit documentation in R/ols-breusch-pagan-test.R
 \name{ols_test_breusch_pagan}
 \alias{ols_test_breusch_pagan}
-\alias{ols_bp_test}
 \title{Breusch pagan test}
 \usage{
-ols_test_breusch_pagan(model, fitted.values = TRUE, rhs = FALSE,
-  multiple = FALSE, p.adj = c("none", "bonferroni", "sidak", "holm"),
-  vars = NA)
+ols_test_breusch_pagan(
+  model,
+  fitted.values = TRUE,
+  rhs = FALSE,
+  multiple = FALSE,
+  p.adj = c("none", "bonferroni", "sidak", "holm"),
+  vars = NA
+)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
@@ -58,18 +62,13 @@ values of a independent variable.
 Computation
 
 \itemize{
-  \item Fit a regression model
-  \item Regress the squared residuals from the above model on the independent variables
-  \item Compute \eqn{nR^2}. It follows a chi square distribution with p -1 degrees of
-        freedom, where p is the number of independent variables, n is the sample size and
-				 \eqn{R^2} is the coefficient of determination from the regression in step 2.
+\item Fit a regression model
+\item Regress the squared residuals from the above model on the independent variables
+\item Compute \eqn{nR^2}. It follows a chi square distribution with p -1 degrees of
+freedom, where p is the number of independent variables, n is the sample size and
+\eqn{R^2} is the coefficient of determination from the regression in step 2.
 }
 }
-\section{Deprecated Function}{
-
-\code{ols_bp_test()} has been deprecated. Instead use \code{ols_test_breusch_pagan()}.
-}
-
 \examples{
 # model
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
@@ -100,7 +99,9 @@ Random Coefficient Variation. Econometrica 47, 1287–1294
 Cook, R. D.; Weisberg, S. (1983). "Diagnostics for Heteroskedasticity in Regression". Biometrika. 70 (1): 1–10.
 }
 \seealso{
-Other heteroskedasticity tests: \code{\link{ols_test_bartlett}},
-  \code{\link{ols_test_f}}, \code{\link{ols_test_score}}
+Other heteroskedasticity tests: 
+\code{\link{ols_test_bartlett}()},
+\code{\link{ols_test_f}()},
+\code{\link{ols_test_score}()}
 }
 \concept{heteroskedasticity tests}

@@ -41,9 +41,6 @@
 #' Kutner, MH, Nachtscheim CJ, Neter J and Li W., 2004, Applied Linear Statistical Models (5th edition).
 #' Chicago, IL., McGraw Hill/Irwin.
 #'
-#' @section Deprecated Function:
-#' \code{ols_avplots()} has been deprecated. Instead use \code{ols_plot_added_variable()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 #' ols_plot_added_variable(model)
@@ -63,7 +60,6 @@ ols_plot_added_variable <- function(model, print_plot = TRUE) {
   data    <- ols_prep_avplot_data(model)
   xnames  <- colnames(data)
   nl      <- length(xnames)
-  resp    <- xnames[1]
   myplots <- list()
 
   for (i in 2:nl) {
@@ -72,11 +68,17 @@ ols_plot_added_variable <- function(model, print_plot = TRUE) {
     y <- ols_prep_regress_y(data, i)
     d <- data.frame(x, y)
 
-    p <- eval(substitute(ggplot(d, aes(x = x, y = y)) +
-      geom_point(colour = "blue", size = 2) +
-      xlab(paste(xnames[i], " | Others")) +
-      ylab(paste(resp, " | Others")) +
-      stat_smooth(method = "lm", se = FALSE), list(i = i)))
+    p <-
+      eval(
+        substitute(
+          ggplot(d, aes(x = x, y = y)) +
+            geom_point(colour = "blue", size = 2) +
+            stat_smooth(method = "lm", se = FALSE) +
+            xlab(paste(xnames[i], " | Others")) +
+            ylab(paste(xnames[1], " | Others")),
+          list(i = i)
+        )
+      )
 
     j <- i - 1
     myplots[[j]] <- p
@@ -84,44 +86,9 @@ ols_plot_added_variable <- function(model, print_plot = TRUE) {
   }
 
   if (print_plot) {
-    marrangeGrob(myplots, nrow = 2, ncol = 2)
+    marrangeGrob(myplots, nrow = 2, ncol = 2, top = "Added Variable Plots")
   } else {
     return(myplots)
   }
 
-}
-
-#' @export
-#' @rdname ols_plot_added_variable
-#' @usage NULL
-#'
-ols_avplots <- function(model) {
-  .Deprecated("ols_plot_added_variable()")
-}
-
-
-#' Remove columns
-#'
-#' Removes columns and returns a matrix.
-#'
-#' @param data A `data.frame`.
-#' @param i A numeric vector of length 1.
-#'
-#' @noRd
-#'
-remove_columns <- function(data, i) {
-	as.matrix(data[, c(-1, -i)])
-}
-
-#' Select columns
-#'
-#' Select column and return as matrix.
-#'
-#' @param data A `data.frame`.
-#' @param i A numeric vector of length 1.
-#'
-#' @noRd
-#'
-select_columns <- function(data, i = 1) {
-	as.matrix(data[, i])
 }

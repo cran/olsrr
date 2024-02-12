@@ -1,3 +1,40 @@
+# olsrr 0.6.0
+
+This is a minor release for bug fixes and other enhancements.
+
+## New Features
+
+- hierarchical selection can be enables when using `p` values as variable selection metric
+
+## Enhancements
+
+- force variables to be included or excluded from the model at all stages of variable selection
+- Variable selection methods allow use of the following metrics:
+    - p value
+    - akaike information criterion (aic)
+    - schwarz bayesian criterion (sbc)
+    - sawa bayesian criterion (sbic)
+    - r-square
+    - adjusted r-square
+- Choose threshold for determining influential observations in `ols_plot_dffits()`
+
+## Bug Fixes
+
+- Allow users to specify threshold for detecting outliers ([#178](https://github.com/rsquaredacademy/olsrr/issues/178))
+- If `ols_test_outlier()` does not find any outliers, it returns largest positive residual instead of largest absolute residual ([#177](https://github.com/rsquaredacademy/olsrr/issues/177))
+- using `ols_step_all_possible()` with Model created from dynamic function leads to `"Error in eval(model$call$data) . . . not found"` ([#176](https://github.com/rsquaredacademy/olsrr/issues/176))
+- `ols_step_both_p(): Error in if (pvals[minp] <= pent) {: argument is of length zero` ([#175](https://github.com/rsquaredacademy/olsrr/issues/175))
+- Handle extremely significant variables ([#173](https://github.com/rsquaredacademy/olsrr/issues/173))
+- `ols_correlations()` returns error for models with 2 predictors ([#168](https://github.com/rsquaredacademy/olsrr/issues/168))
+- `ols_step_both_aic()` doesn't return model ([#167](https://github.com/rsquaredacademy/olsrr/issues/167))
+- `ols_regress()` returned residual standard error instead of RMSE (@jens-daniel-mueller, [#165](https://github.com/rsquaredacademy/olsrr/issues/165))
+- Extracting model data ([#159](https://github.com/rsquaredacademy/olsrr/issues/159))
+- ols_plot_resid_stud() fails to plot outliers due to y-axis range ([#155](https://github.com/rsquaredacademy/olsrr/issues/155))
+- ols_correlations error ([#191](https://github.com/rsquaredacademy/olsrr/issues/191))
+- Mallow's Cp behaves inconsistently depending on model specification ([#196](https://github.com/rsquaredacademy/olsrr/issues/196))
+- ols_step_forward_p(...) problem using the funtion ols_step_forward_p ([#200](https://github.com/rsquaredacademy/olsrr/issues/200))
+- Output of the command "ols_step_both_aic" doesn't contain final model ([#201](https://github.com/rsquaredacademy/olsrr/issues/201))
+
 # olsrr 0.5.3
 
 This is a patch release to reduce the number of packages imported and
@@ -16,17 +53,16 @@ The following functions will now require the variable names to be enclosed withi
 
 # olsrr 0.5.2
 
-This is a minor release to fix bugs from breaking changes in recipes package 
+This is a minor release to fix bugs from breaking changes in recipes package
 and other enhancements.
 
 ## Enhancements
 
-- variable selection procedures now return the final model as an object of 
-class `lm` ([#81](https://github.com/rsquaredacademy/olsrr/issues/81))
-- data preparation functions of selected plots are now exported to enable end 
-users to create customized plots and to use plotting library of their 
-choice ([#86](https://github.com/rsquaredacademy/olsrr/issues/81))
-
+- variable selection procedures now return the final model as an object of
+  class `lm` ([#81](https://github.com/rsquaredacademy/olsrr/issues/81))
+- data preparation functions of selected plots are now exported to enable end
+  users to create customized plots and to use plotting library of their
+  choice ([#86](https://github.com/rsquaredacademy/olsrr/issues/81))
 
 # olsrr 0.5.1
 
@@ -34,13 +70,13 @@ This is a patch release to fix minor bugs and improve error messages.
 
 ## Enhancements
 
-olsrr now throws better error messages keeping in mind beginner and intermediate R users. It is 
+olsrr now throws better error messages keeping in mind beginner and intermediate R users. It is
 a work in progress and should get better in future releases.
 
 ## Bug Fixes
 
-Variable selection procedures based on p values now handle categorical variables in the 
-same way as the procedures based on AIC values. 
+Variable selection procedures based on p values now handle categorical variables in the
+same way as the procedures based on AIC values.
 
 # olsrr 0.5.0
 
@@ -54,7 +90,7 @@ We have made some changes to the API to make it more user friendly:
 - all the test start with `ols_test_*`
 - all the plots start with `ols_plot_*`
 
-## Bug Fixes 
+## Bug Fixes
 
 - ols_regress returns error in the presence of interaction terms in the formula ([#49](https://github.com/rsquaredacademy/olsrr/issues/49))
 
@@ -71,16 +107,16 @@ We have made some changes to the API to make it more user friendly:
 
 ## Bug Fixes
 
-- mismatch in sign of partial and semi partial correlations  ([#44](https://github.com/rsquaredacademy/olsrr/issues/44))
+- mismatch in sign of partial and semi partial correlations ([#44](https://github.com/rsquaredacademy/olsrr/issues/44))
 - error in diagnostic panel ([#45](https://github.com/rsquaredacademy/olsrr/issues/45))
-- standardized betas in the presence of interaction terms  ([#46](https://github.com/rsquaredacademy/olsrr/issues/46))
+- standardized betas in the presence of interaction terms ([#46](https://github.com/rsquaredacademy/olsrr/issues/46))
 
-A big thanks goes to ([Dr. Kimberly Henry](http://psy.psych.colostate.edu/psylist/detail.asp?Num=163)) for
+A big thanks goes to ([Dr. Kimberly Henry](https://kimberlyhenry.github.io/my_website/)) for
 identifying bugs and other valuable feedback that helped improve the package.
 
 # olsrr 0.3.0
 
-This is a minor release containing bug fixes. 
+This is a minor release containing bug fixes.
 
 ## Bug Fixes
 
@@ -102,10 +138,9 @@ This is a minor release containing bug fixes.
 - step AIC backward method AIC value rounded to 3 decimal points ([#39](https://github.com/rsquaredacademy/olsrr/issues/39))
 - step AIC both direction method AIC value rounded to 3 decimal points ([#40](https://github.com/rsquaredacademy/olsrr/issues/40))
 
-
 # olsrr 0.2.0
 
-This is a minor release containing bug fixes and minor improvements. 
+This is a minor release containing bug fixes and minor improvements.
 
 ## Bug Fixes
 

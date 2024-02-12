@@ -96,9 +96,6 @@ print.ols_pure_error_anova <- function(x, ...) {
 
 peanova <- function(model) {
 
-  lfit   <- NULL
-  rerror <- NULL
-
   n         <- model_rows(model)
   nd        <- pred_table_length(model)
   comp      <- pea_data(model)
@@ -163,19 +160,9 @@ pred_table_length <- function(model) {
 
 predictor_mean <- function(data, pred_name, resp) {
 
-  is_dt   <- is.data.table(data)
-  d_class <- class(data)
-
-  if(!is_dt) {
-    data <- data.table(data)
-  }
-
-  out <- data[, list(mean = mean(get(resp))), by = pred_name]
-  if(!is_dt) {
-    class(out) <- d_class
-  }
-  
-  out[order(out[[1]]), ]
+  d   <- split(data[[resp]], data[[pred_name]])
+  out <- lapply(d, mean)
+  data.frame(n = names(out), mean = as.numeric(out))
 
 }
 
@@ -194,11 +181,6 @@ replicate_mean <- function(mean_pred, pred_u) {
 
 
 pea_data_comp <- function(data, model, mean_rep) {
-
-  pred <- NULL
-  ybar <- NULL
-  yhat <- NULL
-  y    <- NULL
 
   data$yhat      <- fitted(model)
   colnames(data) <- c("y", "pred", "yhat")

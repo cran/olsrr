@@ -23,22 +23,19 @@
 #' Snedecor, George W. and Cochran, William G. (1989), Statistical Methods,
 #' Eighth Edition, Iowa State University Press.
 #'
-#' @section Deprecated Function:
-#' \code{ols_bartlett_test()} has been deprecated. Instead use \code{ols_test_bartlett()}.
-#'
 #' @family heteroskedasticity tests
 #'
 #' @examples
 #' # using grouping variable
-#' library(descriptr)
-#' ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
+#' if (require("descriptr")) {
+#'   library(descriptr)
+#'   ols_test_bartlett(mtcarz, 'mpg', group_var = 'cyl')
+#' }
 #'
 #' # using variables
 #' ols_test_bartlett(hsb, 'read', 'write')
 #'
 #' @importFrom stats pchisq formula
-#' @useDynLib olsrr, .registration = TRUE
-#' @importFrom Rcpp sourceCpp
 #'
 #' @export
 #'
@@ -64,11 +61,10 @@ ols_test_bartlett.default <- function(data, ..., group_var = NULL) {
       stop("Please specify at least two variables.", call. = FALSE)
     }
 
-    out       <- gvar(ln, ly)
+    out       <- rep(ly, times = ln)
     fdata     <- unlist(z)
     groupvars <- as.factor(unlist(out))
-  
-    g_var <- NULL
+    g_var     <- NULL
 
   } else {
 
@@ -85,28 +81,17 @@ ols_test_bartlett.default <- function(data, ..., group_var = NULL) {
   fstat <- bartlett_fstat(fdata, groupvars)
   pval  <- pchisq(fstat, df, lower.tail = FALSE)
 
-  out <- list(
-    fstat = fstat,
-    pval  = pval,
-    df    = df,
-    var_c = var_c,
-    g_var = g_var
-  )
+  out <- list(df    = df,
+              fstat = fstat,
+              g_var = g_var,
+              pval  = pval,
+              var_c = var_c)
 
   class(out) <- "ols_test_bartlett"
 
   return(out)
 
 }
-
-#' @export
-#' @rdname ols_test_bartlett
-#' @usage NULL
-#'
-ols_bartlett_test <- function(data, ..., group_var = NULL) {
-  .Deprecated("ols_test_bartlett()")
-}
-
 
 #' @export
 #'

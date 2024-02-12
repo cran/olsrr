@@ -4,11 +4,13 @@
 \name{cement}
 \alias{cement}
 \title{Test Data Set}
-\format{An object of class \code{data.frame} with 13 rows and 6 columns.}
+\format{
+An object of class \code{data.frame} with 13 rows and 6 columns.
+}
 \usage{
 cement
 }
 \description{
 Test Data Set
 }
-\keyword{datasets}
+\keyword{internal}

@@ -6,6 +6,7 @@
 #' examine model fit.
 #'
 #' @param model An object of class \code{lm}.
+#' @param threshold Threshold for detecting outliers. Default is 2.
 #' @param print_plot logical; if \code{TRUE}, prints the plot else returns a plot object.
 #'
 #' @details
@@ -24,12 +25,10 @@
 #' outliers/influential observations}
 #' \item{threshold}{\code{threshold} for classifying an observation as an outlier/influential observation}
 #'
-#' @section Deprecated Function:
-#' \code{ols_dsrvsp_plot()} has been deprecated. Instead use \code{ols_plot_resid_stud_fit()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_plot_resid_stud_fit(model)
+#' ols_plot_resid_stud_fit(model, threshold = 3)
 #'
 #' @seealso [ols_plot_resid_lev()], [ols_plot_resid_stand()],
 #'   [ols_plot_resid_stud()]
@@ -38,53 +37,49 @@
 #'
 #' @export
 #'
-ols_plot_resid_stud_fit <- function(model, print_plot = TRUE) {
+ols_plot_resid_stud_fit <- function(model, threshold = NULL, print_plot = TRUE) {
 
   check_model(model)
 
-  fct_color   <- NULL
-  color       <- NULL
-  pred        <- NULL
-  dsr         <- NULL
-  txt         <- NULL
-  obs         <- NULL
-  ds          <- NULL
-  k           <- ols_prep_dsrvf_data(model)
+  if (is.null(threshold)) {
+    threshold <- 2
+  }
+
+  k           <- ols_prep_dsrvf_data(model, threshold)
   d           <- k$ds
   d$txt       <- ifelse(d$color == "outlier", d$obs, NA)
-  f           <- d[color == "outlier", c("obs", "pred", "dsr")]
+  f           <- d[d$color == "outlier", c("obs", "pred", "dsr")]
   colnames(f) <- c("observation", "fitted_values", "del_stud_resid")
-    
-  p <- ggplot(d, aes(x = pred, y = dsr, label = txt)) +
+
+  p <-
+    ggplot(d, aes(x = pred, y = dsr, label = txt)) +
     geom_point(aes(colour = fct_color)) +
-    scale_color_manual(values = c("blue", "red")) +
-    ylim(k$cminx, k$cmaxx) + xlab("Predicted Value") +
-    ylab("Deleted Studentized Residual") + labs(color = "Observation") +
-    ggtitle("Deleted Studentized Residual vs Predicted Values") +
-    geom_hline(yintercept = c(-2, 2), colour = "red") +
+    geom_hline(yintercept = c(-threshold, threshold), colour = "red") +
     geom_text(hjust = -0.2, nudge_x = 0.15, size = 3, family = "serif",
-              fontface = "italic", colour = "darkred", na.rm = TRUE) +
-    annotate(
-      "text", x = Inf, y = Inf, hjust = 1.5, vjust = 2,
-      family = "serif", fontface = "italic", colour = "darkred",
-      label = paste0("Threshold: abs(", 2, ")")
-    )
+              fontface = "italic", colour = "darkred", na.rm = TRUE)
+
+  p <-
+    p +
+    annotate("text", x = Inf, y = Inf, hjust = 1.5, vjust = 2,
+             family = "serif", fontface = "italic", colour = "darkred",
+             label = paste0("Threshold: abs(", threshold, ")"))
+
+  p <-
+    p +
+    scale_color_manual(values = c("blue", "red"))
+
+  p <-
+    p +
+    labs(color = "Observation") +
+    xlab("Predicted Value") +
+    ylab("Deleted Studentized Residual") +
+    ggtitle("Deleted Studentized Residual vs Predicted Values") +
+    ylim(k$cminx, k$cmaxx)
 
   if (print_plot) {
     suppressWarnings(print(p))
   } else {
-    return(list(plot = p, outliers = f, threshold = 2))
+    return(list(plot = p, outliers = f, threshold = threshold))
   }
 
 }
-
-#' @export
-#' @rdname ols_plot_resid_stud_fit
-#' @usage NULL
-#'
-ols_dsrvsp_plot <- function(model) {
-  .Deprecated("ols_plot_resid_stud_fit()")
-}
-
-
-

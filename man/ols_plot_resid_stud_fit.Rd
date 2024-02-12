@@ -2,13 +2,14 @@
 % Please edit documentation in R/ols-dsresid-vs-pred-plot.R
 \name{ols_plot_resid_stud_fit}
 \alias{ols_plot_resid_stud_fit}
-\alias{ols_dsrvsp_plot}
 \title{Deleted studentized residual vs fitted values plot}
 \usage{
-ols_plot_resid_stud_fit(model, print_plot = TRUE)
+ols_plot_resid_stud_fit(model, threshold = NULL, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{threshold}{Threshold for detecting outliers. Default is 2.}
 
 \item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
@@ -34,17 +35,13 @@ observations than standardized residuals. If an observation has an externally
 studentized residual that is larger than 2 (in absolute value) we can call
 it an outlier.
 }
-\section{Deprecated Function}{
-
-\code{ols_dsrvsp_plot()} has been deprecated. Instead use \code{ols_plot_resid_stud_fit()}.
-}
-
 \examples{
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_plot_resid_stud_fit(model)
+ols_plot_resid_stud_fit(model, threshold = 3)
 
 }
 \seealso{
-[ols_plot_resid_lev()], [ols_plot_resid_stand()],
-  [ols_plot_resid_stud()]
+\code{\link[=ols_plot_resid_lev]{ols_plot_resid_lev()}}, \code{\link[=ols_plot_resid_stand]{ols_plot_resid_stand()}},
+\code{\link[=ols_plot_resid_stud]{ols_plot_resid_stud()}}
 }

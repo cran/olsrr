@@ -2,15 +2,20 @@
 % Please edit documentation in R/ols-cooks-d-barplot.R
 \name{ols_plot_cooksd_bar}
 \alias{ols_plot_cooksd_bar}
-\alias{ols_cooksd_barplot}
 \title{Cooks' D bar plot}
 \usage{
-ols_plot_cooksd_bar(model, print_plot = TRUE)
+ols_plot_cooksd_bar(model, type = 1, threshold = NULL, print_plot = TRUE)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
 
-\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
+\item{type}{An integer between 1 and 5 selecting one of the 5 methods for
+computing the threshold.}
+
+\item{threshold}{Threshold for detecting outliers.}
+
+\item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a
+plot object.}
 }
 \value{
 \code{ols_plot_cooksd_bar} returns  a list containing the
@@ -32,23 +37,38 @@ residual and leverage i.e it takes it account both the \emph{x} value and
 Steps to compute Cook's distance:
 
 \itemize{
-  \item Delete observations one at a time.
-  \item Refit the regression model on remaining \eqn{n - 1} observations
-  \item examine how much all of the fitted values change when the ith observation is deleted.
+\item Delete observations one at a time.
+\item Refit the regression model on remaining \eqn{n - 1} observations
+\item examine how much all of the fitted values change when the ith observation is deleted.
 }
 
-A data point having a large cook's d indicates that the data point strongly influences the fitted values.
-}
-\section{Deprecated Function}{
+A data point having a large cook's d indicates that the data point strongly
+influences the fitted values. There are several methods/formulas to compute
+the threshold used for detecting or classifying observations as outliers and
+we list them below.
 
-\code{ols_cooksd_barplot()} has been deprecated. Instead use \code{ols_plot_cooksd_bar()}.
+\itemize{
+\item \strong{Type 1} : 4 / n
+\item \strong{Type 2} : 4 / (n - k - 1)
+\item \strong{Type 3} : ~1
+\item \strong{Type 4} : 1 / (n - k - 1)
+\item \strong{Type 5} : 3 * mean(Vector of cook's distance values)
 }
 
+where \strong{n} and \strong{k} stand for
+
+\itemize{
+\item \strong{n}: Number of observations
+\item \strong{k}: Number of predictors
+}
+}
 \examples{
 model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 ols_plot_cooksd_bar(model)
+ols_plot_cooksd_bar(model, type = 4)
+ols_plot_cooksd_bar(model, threshold = 0.2)
 
 }
 \seealso{
-[ols_plot_cooksd_chart()]
+\code{\link[=ols_plot_cooksd_chart]{ols_plot_cooksd_chart()}}
 }

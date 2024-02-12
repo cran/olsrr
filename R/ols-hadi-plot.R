@@ -11,9 +11,6 @@
 #' @references
 #' Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
 #'
-#' @section Deprecated Function:
-#' \code{ols_hadi_plot()} has been deprecated. Instead use \code{ols_plot_hadi()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 #' ols_plot_hadi(model)
@@ -26,7 +23,6 @@ ols_plot_hadi <- function(model, print_plot = TRUE) {
 
   check_model(model)
 
-  hadi <- NULL
   hdi  <- unname(ols_hadi(model)$hadi)
   obs  <- seq_len(length(hdi))
   d    <- data.frame(obs = obs, hdi = hdi)
@@ -34,8 +30,12 @@ ols_plot_hadi <- function(model, print_plot = TRUE) {
   p <-
     ggplot(d, aes(obs, hdi, ymin = min(hdi), ymax = hdi)) +
     geom_linerange(colour = "blue") +
-    geom_point(shape = 1, colour = "blue") +
-    xlab("Observation") + ylab("Hadi's Measure") +
+    geom_point(shape = 1, colour = "blue")
+
+  p <-
+    p +
+    xlab("Observation") +
+    ylab("Hadi's Measure") +
     ggtitle("Hadi's Influence Measure")
 
   if (print_plot) {
@@ -44,12 +44,4 @@ ols_plot_hadi <- function(model, print_plot = TRUE) {
     return(p)
   }
 
-}
-
-#' @export
-#' @rdname ols_plot_hadi
-#' @usage NULL
-#'
-ols_hadi_plot <- function(model) {
-  .Deprecated("ols_plot_hadi()")
 }

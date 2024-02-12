@@ -25,9 +25,6 @@
 #' Wiley Series in Probability and Mathematical Statistics.
 #' New York: John Wiley & Sons. pp. ISBN 0-471-05856-4.
 #'
-#' @section Deprecated Function:
-#' \code{ols_dfbetas_panel()} has been deprecated. Instead use \code{ols_plot_dfbetas()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 #' ols_plot_dfbetas(model)
@@ -41,9 +38,6 @@
 ols_plot_dfbetas <- function(model, print_plot = TRUE) {
 
   check_model(model)
-
-  obs <- NULL
-  txt <- NULL
 
   dfb       <- dfbetas(model)
   n         <- nrow(dfb)
@@ -60,22 +54,24 @@ ols_plot_dfbetas <- function(model, print_plot = TRUE) {
     d       <- ols_prep_dfbeta_data(df_data, threshold)
     f       <- ols_prep_dfbeta_outliers(d)
 
-    p <- eval(substitute(
-      ggplot(d, aes(x = obs, y = dbetas, label = txt, ymin = 0, ymax = dbetas)) +
-        geom_linerange(colour = "blue") +
-        geom_hline(yintercept = c(0, threshold, -threshold), colour = "red") +
-        geom_point(colour = "blue", shape = 1) +
-        xlab("Observation") + ylab("DFBETAS") +
-        ggtitle(paste("Influence Diagnostics for", colnames(dfb)[i])) +
-        geom_text(hjust = -0.2, nudge_x = 0.15, size = 2, family = "serif",
-                  fontface = "italic", colour = "darkred", na.rm = TRUE) +
-        annotate(
-          "text", x = Inf, y = Inf, hjust = 1.5, vjust = 2,
-          family = "serif", fontface = "italic", colour = "darkred",
-          label = paste("Threshold:", round(threshold, 2))
-        ),
-      list(i = i)
-    ))
+    p <-
+      eval(
+        substitute(
+          ggplot(d, aes(x = obs, y = dbetas, label = txt, ymin = 0, ymax = dbetas)) +
+          geom_linerange(colour = "blue") +
+          geom_hline(yintercept = c(0, threshold, -threshold), colour = "red") +
+          geom_point(colour = "blue", shape = 1) +
+          geom_text(hjust = -0.2, nudge_x = 0.15, size = 2, family = "serif",
+                    fontface = "italic", colour = "darkred", na.rm = TRUE) +
+          annotate("text", x = Inf, y = Inf, hjust = 1.5, vjust = 2,
+                   family = "serif", fontface = "italic", colour = "darkred",
+                   label = paste("Threshold:", round(threshold, 2))) +
+          xlab("Observation") +
+          ylab("DFBETAS") +
+          ggtitle(paste("Influence Diagnostics for", colnames(dfb)[i])),
+          list(i = i)
+        )
+      )
 
     myplots[[i]]  <- p
     outliers[[i]] <- f
@@ -89,12 +85,3 @@ ols_plot_dfbetas <- function(model, print_plot = TRUE) {
   }
 
 }
-
-#' @export
-#' @rdname ols_plot_dfbetas
-#' @usage NULL
-#'
-ols_dfbetas_panel <- function(model) {
-  .Deprecated("ols_plot_dfbetas()")
-}
-

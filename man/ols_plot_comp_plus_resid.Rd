@@ -2,7 +2,6 @@
 % Please edit documentation in R/ols-residual-plus-component-plot.R
 \name{ols_plot_comp_plus_resid}
 \alias{ols_plot_comp_plus_resid}
-\alias{ols_rpc_plot}
 \title{Residual plus component plot}
 \usage{
 ols_plot_comp_plus_resid(model, print_plot = TRUE)
@@ -17,11 +16,6 @@ The residual plus component plot indicates whether any non-linearity is
 present in the relationship between response and predictor variables and can
 suggest possible transformations for linearizing the data.
 }
-\section{Deprecated Function}{
-
-\code{ols_rpc_plot()} has been deprecated. Instead use \code{ols_plot_comp_plus_resid()}.
-}
-
 \examples{
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_plot_comp_plus_resid(model)
@@ -34,5 +28,5 @@ Kutner, MH, Nachtscheim CJ, Neter J and Li W., 2004, Applied Linear Statistical 
 Chicago, IL., McGraw Hill/Irwin.
 }
 \seealso{
-[ols_plot_added_variable()], [ols_plot_resid_regressor()]
+\code{\link[=ols_plot_added_variable]{ols_plot_added_variable()}}, \code{\link[=ols_plot_resid_regressor]{ols_plot_resid_regressor()}}
 }

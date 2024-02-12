@@ -29,9 +29,6 @@
 #' @references
 #' Wooldridge, J. M. 2013. Introductory Econometrics: A Modern Approach. 5th ed. Mason, OH: South-Western.
 #'
-#' @section Deprecated Function:
-#' \code{ols_f_test()} has been deprecated. Instead use \code{ols_test_f()}.
-#'
 #' @examples
 #' # model
 #' model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
@@ -85,29 +82,13 @@ ols_test_f.default <- function(model, fitted_values = TRUE, rhs = FALSE, vars = 
     }
   }
 
-  out <- list(
-    f     = result$f,
-    p     = result$p,
-    numdf = result$numdf,
-    dendf = result$dendf,
-    fv    = fitted_values,
-    rhs   = rhs,
-    vars  = vars,
-    resp  = resp,
-    preds = nam
-  )
+  out <- list(dendf = result$dendf, f = result$f, fv = fitted_values,
+              numdf = result$numdf, p = result$p, preds = nam,
+              resp = resp, rhs = rhs, vars = vars)
 
   class(out) <- "ols_test_f"
 
   return(out)
-}
-
-#' @export
-#' @rdname ols_test_f
-#' @usage NULL
-#'
-ols_f_test <- function(model, fitted_values = TRUE, rhs = FALSE, vars = NULL, ...) {
-  .Deprecated("ols_test_f()")
 }
 
 #' @export
@@ -118,7 +99,6 @@ print.ols_test_f <- function(x, ...) {
 
 frhs <- function(nam, model, n, l) {
 
-  fstatistic <- NULL
   np         <- length(nam)
   var_resid  <- (model_rss(model) / n) - 1
   ind        <- (residuals(model) ^ 2) / var_resid
@@ -131,7 +111,6 @@ frhs <- function(nam, model, n, l) {
 
 fvar <- function(n, l, model, vars) {
 
-  fstatistic <- NULL
   var_resid  <- (model_rss(model) / n) - 1
   ind        <- (residuals(model) ^ 2) / var_resid
   mdata      <- l[-1]
@@ -144,7 +123,6 @@ fvar <- function(n, l, model, vars) {
 
 ffit <- function(model) {
 
-  fstatistic   <- NULL
   pred         <- fitted(model)
   pred_len     <- length(pred)
   resid        <- model$residuals ^ 2

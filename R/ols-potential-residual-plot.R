@@ -10,9 +10,6 @@
 #' @references
 #' Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
 #'
-#' @section Deprecated Function:
-#' \code{ols_potrsd_plot()} has been deprecated. Instead use \code{ols_plot_resid_pot()}.
-#'
 #' @examples
 #' model <- lm(mpg ~ disp + hp + wt, data = mtcars)
 #' ols_plot_resid_pot(model)
@@ -24,15 +21,13 @@
 ols_plot_resid_pot <- function(model, print_plot = TRUE) {
 
   check_model(model)
-
-  res <- NULL
-  pot <- NULL
-  d   <- data.frame(res = hadio(model, 3), pot = hadio(model, 2))
+  d <- data.frame(res = hadio(model, 3), pot = hadio(model, 2))
 
   p <-
     ggplot(d, aes(x = res, y = pot)) +
     geom_point(colour = "blue", shape = 1) +
-    xlab("Residual") + ylab("Potential") +
+    xlab("Residual") +
+    ylab("Potential") +
     ggtitle("Potential-Residual Plot")
 
   if (print_plot) {
@@ -42,15 +37,6 @@ ols_plot_resid_pot <- function(model, print_plot = TRUE) {
   }
 
 }
-
-#' @export
-#' @rdname ols_plot_resid_pot
-#' @usage NULL
-#'
-ols_potrsd_plot <- function(model) {
-  .Deprecated("ols_plot_resid_pot()")
-}
-
 
 hadio <- function(model, n) {
   ols_hadi(model)[[n]]

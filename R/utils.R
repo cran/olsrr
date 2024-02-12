@@ -54,20 +54,6 @@ formats_t <- function() {
   return(x)
 }
 
-#' Model data
-#'
-#' Returns the data used in the model.
-#'
-#' @param model An object of class \code{lm}.
-#'
-#' @noRd
-#'
-mod_sel_data <- function(model) {
-
-  eval(model$call$data)
-
-}
-
 l <- function(x) {
   x <- as.character(x)
   k <- grep("\\$", x)
@@ -80,25 +66,28 @@ l <- function(x) {
   return(out)
 }
 
-#' @importFrom utils packageVersion menu install.packages
-check_suggests <- function(pkg) {
-  
-  pkg_flag <- tryCatch(utils::packageVersion(pkg), error = function(e) NA)
-  
-  if (is.na(pkg_flag)) {
-    
-    msg <- message(paste0('\n', pkg, ' must be installed for this functionality.'))
-    
-    if (interactive()) {
-      message(msg, "\nWould you like to install it?")
-      if (utils::menu(c("Yes", "No")) == 1) {
-        utils::install.packages(pkg)
-      } else {
-        stop(msg, call. = FALSE)
-      }
-    } else {
-      stop(msg, call. = FALSE)
-    } 
-  }
+null_model_metrics <- function(model, full_model) {
+
+  output <- summary(model)
+  anovam <- anova(model)
+  aic    <- ols_aic(model)
+  sbc    <- ols_sbc(model)
+  sbic   <- ols_sbic(model, full_model)
+  n      <- length(anovam$Df)
+  ess    <- anovam$`Sum Sq`[n]
+  tss    <- sum(anovam$`Sum Sq`)
+  rss    <- tss - ess
+  rsq    <- output$r.squared
+  adjr   <- output$adj.r.squared
+  rmse   <- sqrt(mean(model$residuals ^ 2))
+
+  list(adjr = adjr, aic = aic, sbc = sbc,  sbic = sbic, ess = ess,
+       rsq = rsq, rss = rss, rmse = rmse)
 
 }
+
+max_nchar <- function(char, val, rn = 3, ns = 3) {
+  max(nchar(char), nchar(format(round(val, rn), nsmall = ns)))
+}
+
+

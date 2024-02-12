@@ -2,53 +2,55 @@
 % Please edit documentation in R/ols-stepaic-both-regression.R
 \name{ols_step_both_aic}
 \alias{ols_step_both_aic}
+\alias{ols_step_both_aic.default}
 \alias{plot.ols_step_both_aic}
-\alias{ols_stepaic_both}
 \title{Stepwise AIC regression}
 \usage{
-ols_step_both_aic(model, progress = FALSE, details = FALSE)
+ols_step_both_aic(model, ...)
 
-\method{plot}{ols_step_both_aic}(x, print_plot = TRUE, ...)
+\method{ols_step_both_aic}{default}(
+  model,
+  include = NULL,
+  exclude = NULL,
+  progress = FALSE,
+  details = FALSE,
+  ...
+)
+
+\method{plot}{ols_step_both_aic}(x, print_plot = TRUE, details = TRUE, digits = 3, ...)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
+
+\item{...}{Other arguments.}
+
+\item{include}{Character or numeric vector; variables to be included in selection process.}
+
+\item{exclude}{Character or numeric vector; variables to be excluded from selection process.}
 
 \item{progress}{Logical; if \code{TRUE}, will display variable selection progress.}
 
 \item{details}{Logical; if \code{TRUE}, details of variable selection will
 be printed on screen.}
 
-\item{x}{An object of class \code{ols_step_both_aic}.}
+\item{x}{An object of class \code{ols_step_both_*}.}
 
 \item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 
-\item{...}{Other arguments.}
+\item{digits}{Number of decimal places to display.}
 }
 \value{
-\code{ols_step_both_aic} returns an object of class \code{"ols_step_both_aic"}.
-An object of class \code{"ols_step_both_aic"} is a list containing the
-following components:
+List containing the following components:
 
-\item{model}{model with the least AIC; an object of class \code{lm}}
-\item{predictors}{variables added/removed from the model}
-\item{method}{addition/deletion}
-\item{aics}{akaike information criteria}
-\item{ess}{error sum of squares}
-\item{rss}{regression sum of squares}
-\item{rsq}{rsquare}
-\item{arsq}{adjusted rsquare}
-\item{steps}{total number of steps}
+\item{model}{final model; an object of class \code{lm}}
+\item{metrics}{selection metrics}
+\item{others}{list; info used for plotting and printing}
 }
 \description{
 Build regression model from a set of candidate predictor variables by
 entering and removing predictors based on akaike information criteria, in a
 stepwise manner until there is no variable left to enter or remove any more.
 }
-\section{Deprecated Function}{
-
-\code{ols_stepaic_both()} has been deprecated. Instead use \code{ols_step_both_aic()}.
-}
-
 \examples{
 \dontrun{
 # stepwise regression
@@ -60,20 +62,43 @@ model <- lm(y ~ ., data = stepdata)
 k <- ols_step_both_aic(model)
 plot(k)
 
+# selection metrics
+k$metrics
+
 # final model
 k$model
 
+# include or exclude variables
+# force variable to be included in selection process
+model <- lm(y ~ ., data = stepdata)
+
+ols_step_both_aic(model, include = c("x6"))
+
+# use index of variable instead of name
+ols_step_both_aic(model, include = c(6))
+
+# force variable to be excluded from selection process
+ols_step_both_aic(model, exclude = c("x2"))
+
+# use index of variable instead of name
+ols_step_both_aic(model, exclude = c(2))
+
+# include & exclude variables in the selection process
+ols_step_both_aic(model, include = c("x6"), exclude = c("x2"))
+
+# use index of variable instead of name
+ols_step_both_aic(model, include = c(6), exclude = c(2))
 }
+
 }
 \references{
 Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
 }
 \seealso{
-Other variable selection procedures: \code{\link{ols_step_all_possible}},
-  \code{\link{ols_step_backward_aic}},
-  \code{\link{ols_step_backward_p}},
-  \code{\link{ols_step_best_subset}},
-  \code{\link{ols_step_forward_aic}},
-  \code{\link{ols_step_forward_p}}
+Other both direction selection procedures: 
+\code{\link{ols_step_both_adj_r2}()},
+\code{\link{ols_step_both_r2}()},
+\code{\link{ols_step_both_sbc}()},
+\code{\link{ols_step_both_sbic}()}
 }
-\concept{variable selection procedures}
+\concept{both direction selection procedures}

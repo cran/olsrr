@@ -4,11 +4,13 @@
 \name{fitness}
 \alias{fitness}
 \title{Test Data Set}
-\format{An object of class \code{data.frame} with 31 rows and 7 columns.}
+\format{
+An object of class \code{data.frame} with 31 rows and 7 columns.
+}
 \usage{
 fitness
 }
 \description{
 Test Data Set
 }
-\keyword{datasets}
+\keyword{internal}

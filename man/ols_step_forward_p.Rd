@@ -4,16 +4,22 @@
 \alias{ols_step_forward_p}
 \alias{ols_step_forward_p.default}
 \alias{plot.ols_step_forward_p}
-\alias{ols_step_forward}
 \title{Stepwise forward regression}
 \usage{
 ols_step_forward_p(model, ...)
 
-\method{ols_step_forward_p}{default}(model, penter = 0.3,
-  progress = FALSE, details = FALSE, ...)
+\method{ols_step_forward_p}{default}(
+  model,
+  p_val = 0.3,
+  include = NULL,
+  exclude = NULL,
+  hierarchical = FALSE,
+  progress = FALSE,
+  details = FALSE,
+  ...
+)
 
-\method{plot}{ols_step_forward_p}(x, model = NA, print_plot = TRUE,
-  ...)
+\method{plot}{ols_step_forward_p}(x, model = NA, print_plot = TRUE, details = TRUE, ...)
 }
 \arguments{
 \item{model}{An object of class \code{lm}; the model should include all
@@ -21,8 +27,14 @@ candidate predictor variables.}
 
 \item{...}{Other arguments.}
 
-\item{penter}{p value; variables with p value less than \code{penter} will
+\item{p_val}{p value; variables with p value less than \code{p_val} will
 enter into the model}
+
+\item{include}{Character or numeric vector; variables to be included in selection process.}
+
+\item{exclude}{Character or numeric vector; variables to be excluded from selection process.}
+
+\item{hierarchical}{Logical; if \code{TRUE}, performs hierarchical selection.}
 
 \item{progress}{Logical; if \code{TRUE}, will display variable selection progress.}
 
@@ -39,27 +51,13 @@ An object of class \code{"ols_step_forward_p"} is a list containing the
 following components:
 
 \item{model}{final model; an object of class \code{lm}}
-\item{steps}{number of steps}
-\item{predictors}{variables added to the model}
-\item{rsquare}{coefficient of determination}
-\item{aic}{akaike information criteria}
-\item{sbc}{bayesian information criteria}
-\item{sbic}{sawa's bayesian information criteria}
-\item{adjr}{adjusted r-square}
-\item{rmse}{root mean square error}
-\item{mallows_cp}{mallow's Cp}
-\item{indvar}{predictors}
+\item{metrics}{selection metrics}
 }
 \description{
 Build regression model from a set of candidate predictor variables by
 entering predictors based on p values, in a stepwise manner until there is
 no variable left to enter any more.
 }
-\section{Deprecated Function}{
-
-\code{ols_step_forward()} has been deprecated. Instead use \code{ols_step_forward_p()}.
-}
-
 \examples{
 # stepwise forward regression
 model <- lm(y ~ ., data = surgical)
@@ -70,8 +68,32 @@ model <- lm(y ~ ., data = surgical)
 k <- ols_step_forward_p(model)
 plot(k)
 
+# selection metrics
+k$metrics
+
 # final model
 k$model
+
+# include or exclude variables
+# force variable to be included in selection process
+ols_step_forward_p(model, include = c("age", "alc_mod"))
+
+# use index of variable instead of name
+ols_step_forward_p(model, include = c(5, 7))
+
+# force variable to be excluded from selection process
+ols_step_forward_p(model, exclude = c("pindex"))
+
+# use index of variable instead of name
+ols_step_forward_p(model, exclude = c(2))
+
+# hierarchical selection
+model <- lm(y ~ bcs + alc_heavy + pindex + enzyme_test, data = surgical)
+ols_step_forward_p(model, 0.1, hierarchical = TRUE)
+
+# plot
+k <- ols_step_forward_p(model, 0.1, hierarchical = TRUE)
+plot(k)
 
 }
 \references{
@@ -81,11 +103,11 @@ Kutner, MH, Nachtscheim CJ, Neter J and Li W., 2004, Applied Linear Statistical 
 Chicago, IL., McGraw Hill/Irwin.
 }
 \seealso{
-Other variable selection procedures: \code{\link{ols_step_all_possible}},
-  \code{\link{ols_step_backward_aic}},
-  \code{\link{ols_step_backward_p}},
-  \code{\link{ols_step_best_subset}},
-  \code{\link{ols_step_both_aic}},
-  \code{\link{ols_step_forward_aic}}
+Other forward selection procedures: 
+\code{\link{ols_step_forward_adj_r2}()},
+\code{\link{ols_step_forward_aic}()},
+\code{\link{ols_step_forward_r2}()},
+\code{\link{ols_step_forward_sbc}()},
+\code{\link{ols_step_forward_sbic}()}
 }
-\concept{variable selection procedures}
+\concept{forward selection procedures}

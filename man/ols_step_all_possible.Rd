@@ -2,21 +2,24 @@
 % Please edit documentation in R/ols-all-possible-regression.R
 \name{ols_step_all_possible}
 \alias{ols_step_all_possible}
-\alias{ols_all_subset}
+\alias{ols_step_all_possible.default}
 \alias{plot.ols_step_all_possible}
 \title{All possible regression}
 \usage{
 ols_step_all_possible(model, ...)
 
-\method{plot}{ols_step_all_possible}(x, model = NA, print_plot = TRUE,
-  ...)
+\method{ols_step_all_possible}{default}(model, max_order = NULL, ...)
+
+\method{plot}{ols_step_all_possible}(x, model = NA, print_plot = TRUE, ...)
 }
 \arguments{
 \item{model}{An object of class \code{lm}.}
 
 \item{...}{Other arguments.}
 
-\item{x}{An object of class \code{ols_best_subset}.}
+\item{max_order}{Maximum subset order.}
+
+\item{x}{An object of class \code{ols_step_all_possible}.}
 
 \item{print_plot}{logical; if \code{TRUE}, prints the plot else returns a plot object.}
 }
@@ -25,30 +28,27 @@ ols_step_all_possible(model, ...)
 An object of class \code{"ols_step_all_possible"} is a data frame containing the
 following components:
 
-\item{n}{model number}
+\item{mindex}{model index}
+\item{n}{number of predictors}
 \item{predictors}{predictors in the model}
 \item{rsquare}{rsquare of the model}
 \item{adjr}{adjusted rsquare of the model}
+\item{rmse}{root mean squared error of the model}
 \item{predrsq}{predicted rsquare of the model}
 \item{cp}{mallow's Cp}
 \item{aic}{akaike information criteria}
 \item{sbic}{sawa bayesian information criteria}
 \item{sbc}{schwarz bayes information criteria}
-\item{gmsep}{estimated MSE of prediction, assuming multivariate normality}
-\item{jp}{final prediction error}
-\item{pc}{amemiya prediction criteria}
-\item{sp}{hocking's Sp}
+\item{msep}{estimated MSE of prediction, assuming multivariate normality}
+\item{fpe}{final prediction error}
+\item{apc}{amemiya prediction criteria}
+\item{hsp}{hocking's Sp}
 }
 \description{
 Fits all regressions involving one regressor, two regressors, three
 regressors, and so on. It tests all possible subsets of the set of potential
 independent variables.
 }
-\section{Deprecated Function}{
-
-\code{ols_all_subset()} has been deprecated. Instead use \code{ols_step_all_possible()}.
-}
-
 \examples{
 model <- lm(mpg ~ disp + hp, data = mtcars)
 k <- ols_step_all_possible(model)
@@ -57,17 +57,12 @@ k
 # plot
 plot(k)
 
+# maximum subset
+model <- lm(mpg ~ disp + hp + drat + wt + qsec, data = mtcars)
+ols_step_all_possible(model, max_order = 3)
+
 }
 \references{
 Mendenhall William and  Sinsich Terry, 2012, A Second Course in Statistics Regression Analysis (7th edition).
 Prentice Hall
 }
-\seealso{
-Other variable selection procedures: \code{\link{ols_step_backward_aic}},
-  \code{\link{ols_step_backward_p}},
-  \code{\link{ols_step_best_subset}},
-  \code{\link{ols_step_both_aic}},
-  \code{\link{ols_step_forward_aic}},
-  \code{\link{ols_step_forward_p}}
-}
-\concept{variable selection procedures}

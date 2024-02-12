@@ -89,7 +89,7 @@ ols_coll_diag.default <- function(model) {
 
   vift    <- ols_vif_tol(model)
   eig_ind <- ols_eigen_cindex(model)
-  result  <- list(vif_t = vift, eig_cindex = eig_ind)
+  result  <- list(eig_cindex = eig_ind, vif_t = vift)
 
   class(result) <- "ols_coll_diag"
   return(result)
@@ -126,7 +126,6 @@ ols_eigen_cindex <- function(model) {
 
   check_model(model)
 
-  pvdata <- NULL
   x      <- as.data.frame(model.matrix(model))
   e      <- evalue(x)$e
   cindex <- cindx(e)
@@ -141,7 +140,6 @@ ols_eigen_cindex <- function(model) {
 
 evalue <- function(x) {
 
-  values         <- NULL
   y              <- x
   colnames(y)[1] <- "intercept"
   z              <- scale(y, scale = T, center = F)
@@ -159,8 +157,6 @@ cindx <- function(e) {
 
 pveindex <- function(z) {
 
-  d     <- NULL
-  v     <- NULL
   svdx  <- svd(z)
   svdxd <- svdx$d
 
@@ -175,10 +171,9 @@ pveindex <- function(z) {
 
 
 fmrsq <- function(nam, data, i) {
-
-  r.squared <- NULL
-  fm        <- as.formula(paste0("`", nam[i], "` ", "~ ."))
-  m1        <- summary(lm(fm, data = data))$r.squared
+  
+  fm <- as.formula(paste0("`", nam[i], "` ", "~ ."))
+  m1 <- summary(lm(fm, data = data))$r.squared
 
   1 - m1
 

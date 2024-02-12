@@ -7,8 +7,11 @@
 #'
 #' @param model An object of class \code{lm}; the model should include all
 #'   candidate predictor variables.
-#' @param prem p value; variables with p more than \code{prem} will be removed
+#' @param p_val p value; variables with p more than \code{p_val} will be removed
 #'   from the model.
+#' @param include Character or numeric vector; variables to be included in selection process.
+#' @param exclude Character or numeric vector; variables to be excluded from selection process.
+#' @param hierarchical Logical; if \code{TRUE}, performs hierarchical selection.
 #' @param progress Logical; if \code{TRUE}, will display variable selection progress.
 #' @param details Logical; if \code{TRUE}, will print the regression result at
 #'   each step.
@@ -21,22 +24,10 @@
 #' following components:
 #'
 #' \item{model}{final model; an object of class \code{lm}}
-#' \item{steps}{total number of steps}
-#' \item{removed}{variables removed from the model}
-#' \item{rsquare}{coefficient of determination}
-#' \item{aic}{akaike information criteria}
-#' \item{sbc}{bayesian information criteria}
-#' \item{sbic}{sawa's bayesian information criteria}
-#' \item{adjr}{adjusted r-square}
-#' \item{rmse}{root mean square error}
-#' \item{mallows_cp}{mallow's Cp}
-#' \item{indvar}{predictors}
+#' \item{metrics}{selection metrics}
 #'
 #' @references
 #' Chatterjee, Samprit and Hadi, Ali. Regression Analysis by Example. 5th ed. N.p.: John Wiley & Sons, 2012. Print.
-#'
-#' @section Deprecated Function:
-#' \code{ols_step_backward()} has been deprecated. Instead use \code{ols_step_backward_p()}.
 #'
 #' @examples
 #' # stepwise backward regression
@@ -48,10 +39,34 @@
 #' k <- ols_step_backward_p(model)
 #' plot(k)
 #'
+#' # selection metrics
+#' k$metrics
+#'
 #' # final model
 #' k$model
 #'
-#' @family variable selection procedures
+#' # include or exclude variables
+#' # force variable to be included in selection process
+#' ols_step_backward_p(model, include = c("age", "alc_mod"))
+#'
+#' # use index of variable instead of name
+#' ols_step_backward_p(model, include = c(5, 7))
+#'
+#' # force variable to be excluded from selection process
+#' ols_step_backward_p(model, exclude = c("pindex"))
+#'
+#' # use index of variable instead of name
+#' ols_step_backward_p(model, exclude = c(2))
+#'
+#' # hierarchical selection
+#' model <- lm(y ~ bcs + alc_heavy + pindex + age + alc_mod, data = surgical)
+#' ols_step_backward_p(model, 0.1, hierarchical = TRUE)
+#'
+#' # plot
+#' k <- ols_step_backward_p(model, 0.1, hierarchical = TRUE)
+#' plot(k)
+#'
+#' @family backward selection procedures
 #'
 #' @export
 #'
@@ -60,149 +75,148 @@ ols_step_backward_p <- function(model, ...) UseMethod("ols_step_backward_p")
 #' @export
 #' @rdname ols_step_backward_p
 #'
-ols_step_backward_p.default <- function(model, prem = 0.3, progress = FALSE, details = FALSE, ...) {
+ols_step_backward_p.default <- function(model, p_val = 0.3, include = NULL, exclude = NULL, hierarchical = FALSE, progress = FALSE, details = FALSE, ...) {
 
   if (details) {
-    progress <- TRUE
+    progress <- FALSE
   }
 
-  check_model(model)
-  check_logic(details)
-  check_values(prem, 0, 1)
-  check_npredictors(model, 3)
+  check_inputs(model, include, exclude, progress, details)
+  check_values(p_val, 0, 1)
 
+  indterms <- coeff_names(model)
+  lenterms <- length(indterms)
 
-  l        <- eval(model$call$data)
-  nam      <- colnames(attr(model$terms, "factors"))
-  response <- names(model$model)[1]
-  preds    <- nam
-  cterms   <- preds
-  ilp      <- length(preds)
-  end      <- FALSE
-  step     <- 0
-  rpred    <- c()
-  rsq      <- c()
-  adjrsq   <- c()
-  aic      <- c()
-  sbic     <- c()
-  sbc      <- c()
-  cp       <- c()
-  rmse     <- c()
-
-  if (progress) {
-    cat(format("Backward Elimination Method", justify = "left", width = 27), "\n")
-    cat(rep("-", 27), sep = "", "\n\n")
-    cat(format("Candidate Terms:", justify = "left", width = 16), "\n\n")
-    for (i in seq_len(length(nam))) {
-      cat(paste(i, ".", nam[i]), "\n")
-    }
-    cat("\n")
-
-    cat("We are eliminating variables based on p value...")
-    cat("\n")
-
-    cat("\n")
-    if (!details) {
-      cat("Variables Removed:", "\n\n")
-    }
+  if (is.numeric(include)) {
+    include <- indterms[include]
   }
 
-  while (!end) {
-    m     <- lm(paste(response, "~", paste(preds, collapse = " + ")), l)
-    m_sum <- Anova(m)
-    pvals <- m_sum$`Pr(>F)`
-    maxp  <- which(pvals == max(pvals, na.rm = TRUE))
+  if (is.numeric(exclude)) {
+    exclude <- indterms[exclude]
+  }
 
-    suppressWarnings(
-      if (pvals[maxp] > prem) {
+  if (hierarchical) {
+    ols_step_hierarchical(model, p_val, FALSE, progress, details)
+  } else {
+    l        <- model$model
+    nam      <- colnames(attr(model$terms, "factors"))
+    lockterm <- c(include, exclude)
+    response <- names(model$model)[1]
+    preds    <- setdiff(nam, lockterm)
+    cterms   <- c(include, preds)
 
-        step   <- step + 1
-        rpred  <- c(rpred, preds[maxp])
-        preds  <- preds[-maxp]
-        lp     <- length(rpred)
-        fr     <- ols_regress(paste(response, "~", paste(preds, collapse = " + ")), l)
-        rsq    <- c(rsq, fr$rsq)
-        adjrsq <- c(adjrsq, fr$adjr)
-        aic    <- c(aic, ols_aic(fr$model))
-        sbc    <- c(sbc, ols_sbc(fr$model))
-        sbic   <- c(sbic, ols_sbic(fr$model, model))
-        cp     <- c(cp, ols_mallows_cp(fr$model, model))
-        rmse   <- c(rmse, sqrt(fr$ems))
+    if (progress || details) {
+      ols_candidate_terms(cterms, "backward")
+    }
 
-        if (progress) {
-          if (interactive()) {
-            cat("x", tail(rpred, n = 1), "\n")
-          } else {
-            cat(paste("-", tail(rpred, n = 1)), "\n")
+    end   <- FALSE
+    step  <- 0
+    rpred <- c()
+    rsq   <- c()
+    arsq  <- c()
+    aic   <- c()
+    ess   <- c()
+    rss   <- c()
+    sbic  <- c()
+    sbc   <- c()
+    cp    <- c()
+    rmse  <- c()
+    ppos  <- step + 1 + length(include)
+
+    rsq_base   <- summary(model)$r.squared
+    
+    if (details) {
+      ols_rsquared_init(indterms, "r2", response, rsq_base)
+    }
+
+    if (progress) {
+      ols_progress_init("backward")
+    }
+
+    while (!end) {
+      m     <- lm(paste(response, "~", paste(c(include, cterms), collapse = " + ")), l)
+      m_sum <- Anova(m)
+      nm    <- length(m_sum$`F value`)
+      fvals <- m_sum$`F value`[ppos:nm]
+      pvals <- m_sum$`Pr(>F)`
+      min_f <- which(fvals == min(fvals, na.rm = TRUE))
+
+      len_minf <- length(min_f)
+
+      if (len_minf > 1) {
+        min_f <- min_f[1]
+      }
+
+      minf <- min_f + ppos - 1
+
+
+        if (pvals[minf] > p_val) {
+
+          step   <- step + 1
+          rpred  <- c(rpred, cterms[minf])
+          cterms <- cterms[-minf]
+          lp     <- length(rpred)
+          fr     <- ols_regress(paste(response, "~", paste(c(include, cterms), collapse = " + ")), l)
+          rsq    <- c(rsq, fr$rsq)
+          arsq   <- c(arsq, fr$adjr)
+          rss    <- c(rss, fr$rss)
+          ess    <- c(ess, fr$ess)
+          aic    <- c(aic, ols_aic(fr$model))
+          sbc    <- c(sbc, ols_sbc(fr$model))
+          sbic   <- c(sbic, ols_sbic(fr$model, model))
+          cp     <- c(cp, ols_mallows_cp(fr$model, model))
+          rmse   <- c(rmse, fr$rmse)
+
+          if (progress) {
+            ols_progress_display(rpred, "others")
+          }
+
+          if (details) {
+            mypred <- c(include, cterms)
+            rsq1   <- tail(rsq, n = 1)
+            ols_stepwise_details(step, rpred, mypred, response, rsq1, "removed", "rsq")
+          }
+        } else {
+          end <- TRUE
+          if (progress || details) {
+            ols_stepwise_break(direction = "backward")
           }
         }
 
-        if (details) {
-          cat("\n")
-          cat(paste("Backward Elimination: Step", step, "\n\n"), paste("Variable", rpred[lp], "Removed"), "\n\n")
-          m <- ols_regress(paste(response, "~", paste(preds, collapse = " + ")), l)
-          print(m)
-          cat("\n\n")
-        }
-      } else {
-        end <- TRUE
-        if (progress) {
-          cat("\n")
-          cat(paste0("No more variables satisfy the condition of p value = ", prem))
-          cat("\n")
-        }
-      }
-    )
-  }
-
-  if (details) {
-    cat("\n\n")
-    cat("Variables Removed:", "\n\n")
-    for (i in seq_len(length(rpred))) {
-      if (interactive()) {
-        cat("x", rpred[i], "\n")
-      } else {
-        cat(paste("-", rpred[i]), "\n")
-      }
     }
+
+    if (details) {
+      ols_stepwise_vars(rpred, "backward")
+    }
+
+    final_model <- lm(paste(response, "~", paste(c(include, cterms), collapse = " + ")), data = l)
+
+    metrics     <- data.frame(step       = seq_len(step),
+                              variable   = rpred,
+                              r2         = rsq,
+                              adj_r2     = arsq,
+                              aic        = aic,
+                              sbc        = sbc,
+                              sbic       = sbic,
+                              mallows_cp = cp,
+                              rmse       = rmse)
+
+    out <- list(metrics = metrics,
+                model   = final_model,
+                others  = list(full_model = model))
+
+    class(out) <- "ols_step_backward_p"
+
+    return(out)
   }
 
-  if (progress) {
-    cat("\n\n")
-    cat("Final Model Output", "\n")
-    cat(rep("-", 18), sep = "", "\n\n")
-
-    fi <- ols_regress(
-      paste(response, "~", paste(preds, collapse = " + ")),
-      data = l
-    )
-    print(fi)
-  }
-
-  final_model <- lm(paste(response, "~", paste(preds, collapse = " + ")), data = l)
-
-  out <- list(mallows_cp = cp,
-              removed    = rpred,
-              rsquare    = rsq,
-              indvar     = cterms,
-              steps      = step,
-              sbic       = sbic,
-              adjr       = adjrsq,
-              rmse       = rmse,
-              aic        = aic,
-              sbc        = sbc,
-              model      = final_model)
-
-  class(out) <- "ols_step_backward_p"
-
-  return(out)
 }
 
 #' @export
 #'
 print.ols_step_backward_p <- function(x, ...) {
-  if (x$steps > 0) {
-    print_step_backward(x)
+  if (length(x$metrics$step) > 0) {
+    print_step_output(x, "backward")
   } else {
     print("No variables have been removed from the model.")
   }
@@ -213,43 +227,19 @@ print.ols_step_backward_p <- function(x, ...) {
 #' @export
 #' @rdname ols_step_backward_p
 #'
-plot.ols_step_backward_p <- function(x, model = NA, print_plot = TRUE, ...) {
+plot.ols_step_backward_p <- function(x, model = NA, print_plot = TRUE, details = TRUE, ...) {
 
-  a <- NULL
-  b <- NULL
+  p1 <- ols_plot_stepwise(x, "r2", "R-Square", details, "backward")
+  p2 <- ols_plot_stepwise(x, "adj_r2", "Adjusted R-Square", details, "backward")
+  p3 <- ols_plot_stepwise(x, "aic", "Adjusted R-Square", details, "backward")
+  p4 <- ols_plot_stepwise(x, "rmse", "RMSE", details, "backward")
 
-  y <- seq_len(x$steps)
-
-  d1 <- data.frame(a = y, b = x$rsquare)
-  d2 <- data.frame(a = y, b = x$adjr)
-  d3 <- data.frame(a = y, b = x$mallows_cp)
-  d4 <- data.frame(a = y, b = x$aic)
-  d5 <- data.frame(a = y, b = x$sbic)
-  d6 <- data.frame(a = y, b = x$sbc)
-
-  p1 <- plot_stepwise(d1, "R-Square")
-  p2 <- plot_stepwise(d2, "Adj. R-Square")
-  p3 <- plot_stepwise(d3, "C(p)")
-  p4 <- plot_stepwise(d4, "AIC")
-  p5 <- plot_stepwise(d5, "SBIC")
-  p6 <- plot_stepwise(d6, "SBC")
-
-  myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3,
-                  plot_4 = p4, plot_5 = p5, plot_6 = p6)
+  myplots <- list(plot_1 = p1, plot_2 = p2, plot_3 = p3, plot_4 = p4)
 
   if (print_plot) {
-    marrangeGrob(myplots, nrow = 2, ncol = 2)
+    marrangeGrob(myplots, nrow = 2, ncol = 2, top = "Stepwise Backward Regression")
   } else {
     return(myplots)
   }
 
-}
-
-
-#' @export
-#' @rdname ols_step_backward_p
-#' @usage NULL
-#'
-ols_step_backward <- function(model, prem = 0.3, details = FALSE, ...) {
-  .Deprecated("ols_step_backward_p()")
 }

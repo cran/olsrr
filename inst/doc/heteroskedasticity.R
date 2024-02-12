@@ -1,61 +1,61 @@
-## ---- echo=FALSE, message=FALSE------------------------------------------
+## ----echo=FALSE, message=FALSE------------------------------------------------
 library(olsrr)
 library(ggplot2)
 library(gridExtra)
 library(nortest)
 library(goftest)
 
-## ----bartlett1-----------------------------------------------------------
+## ----bartlett1----------------------------------------------------------------
 ols_test_bartlett(hsb, 'read', group_var = 'female')
 
-## ----bartlett2-----------------------------------------------------------
+## ----bartlett2----------------------------------------------------------------
 ols_test_bartlett(hsb, 'read', 'write')
 
-## ----bp1-----------------------------------------------------------------
+## ----bp1----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model)
 
-## ----bp2-----------------------------------------------------------------
+## ----bp2----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model, rhs = TRUE)
 
-## ----bp3-----------------------------------------------------------------
+## ----bp3----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE)
 
-## ----bp4-----------------------------------------------------------------
+## ----bp4----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'bonferroni')
 
-## ----bp5-----------------------------------------------------------------
+## ----bp5----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'sidak')
 
-## ----bp6-----------------------------------------------------------------
+## ----bp6----------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + drat, data = mtcars)
 ols_test_breusch_pagan(model, rhs = TRUE, multiple = TRUE, p.adj = 'holm')
 
-## ----score1--------------------------------------------------------------
+## ----score1-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_score(model)
 
-## ----score2--------------------------------------------------------------
+## ----score2-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_score(model, rhs = TRUE)
 
-## ----score3--------------------------------------------------------------
+## ----score3-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_score(model, vars = c('disp', 'hp'))
 
-## ----ftest1--------------------------------------------------------------
+## ----ftest1-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_f(model)
 
-## ----ftest2--------------------------------------------------------------
+## ----ftest2-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_f(model, rhs = TRUE)
 
-## ----ftest3--------------------------------------------------------------
+## ----ftest3-------------------------------------------------------------------
 model <- lm(mpg ~ disp + hp + wt + qsec, data = mtcars)
 ols_test_f(model, vars = c('disp', 'hp'))
 

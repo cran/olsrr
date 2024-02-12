@@ -15,9 +15,6 @@
 #'   \item No one residual is visibly away from the random pattern of the residuals indicating that there are no outliers.
 #' }
 #'
-#' @section Deprecated Function:
-#' \code{ols_rvsp_plot()} has been deprecated. Instead use \code{ols_plot_resid_fit()}.
-#'
 #' @family residual diagnostics
 #'
 #' @examples
@@ -29,18 +26,14 @@
 ols_plot_resid_fit <- function(model, print_plot = TRUE) {
 
   check_model(model)
-
-  predicted <- NULL
-  resid     <- NULL
-
   d <- rvspdata(model)
-
   p <-
     ggplot(d, aes(x = predicted, y = resid)) +
     geom_point(shape = 1, colour = "blue") +
-    xlab("Fitted Value") + ylab("Residual") +
-    ggtitle("Residual vs Fitted Values") +
-    geom_hline(yintercept = 0, colour = "red")
+    geom_hline(yintercept = 0, colour = "red") +
+    xlab("Fitted Value") +
+    ylab("Residual") +
+    ggtitle("Residual vs Fitted Values")
 
   if (print_plot) {
     print(p)
@@ -50,19 +43,8 @@ ols_plot_resid_fit <- function(model, print_plot = TRUE) {
 
 }
 
-#' @export
-#' @rdname ols_plot_resid_fit
-#' @usage NULL
-#'
-ols_rvsp_plot <- function(model) {
-  .Deprecated("ols_plot_resid_fit()")
-}
-
-
 rvspdata <- function(model) {
-
   resid     <- residuals(model)
   predicted <- fitted(model)
   data.frame(predicted = predicted, resid = resid)
-
 }
