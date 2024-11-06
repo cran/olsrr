@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -367,21 +367,21 @@ million.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(mpg <span class="sc">~</span> disp <span class="sc">+</span> hp <span class="sc">+</span> wt <span class="sc">+</span> qsec, <span class="at">data =</span> mtcars)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">ols_step_all_possible</span>(model)</span></code></pre></div>
 <pre><code>##    Index N      Predictors  R-Square Adj. R-Square Mallow&#39;s Cp
-## 3      1 1              wt 0.7528328     0.7445939  0.70869536
-## 1      2 1            disp 0.7183433     0.7089548  0.67512054
-## 2      3 1              hp 0.6024373     0.5891853  0.50969578
-## 4      4 1            qsec 0.1752963     0.1478062  0.07541973
-## 8      5 2           hp wt 0.8267855     0.8148396  0.78108710
-## 10     6 2         wt qsec 0.8264161     0.8144448  0.77856272
-## 6      7 2         disp wt 0.7809306     0.7658223  0.72532105
-## 5      8 2         disp hp 0.7482402     0.7308774  0.69454380
-## 7      9 2       disp qsec 0.7215598     0.7023571  0.66395284
-## 9     10 2         hp qsec 0.6368769     0.6118339  0.52014395
-## 14    11 3      hp wt qsec 0.8347678     0.8170643  0.78199548
-## 11    12 3      disp hp wt 0.8268361     0.8082829  0.76789526
-## 13    13 3    disp wt qsec 0.8264170     0.8078189  0.76988533
-## 12    14 3    disp hp qsec 0.7541953     0.7278591  0.68301440
-## 15    15 4 disp hp wt qsec 0.8351443     0.8107212  0.77102968</code></pre>
+## 3      1 1              wt 0.7528328     0.7445939   12.480939
+## 1      2 1            disp 0.7183433     0.7089548   18.129607
+## 2      3 1              hp 0.6024373     0.5891853   37.112642
+## 4      4 1            qsec 0.1752963     0.1478062  107.069616
+## 8      5 2           hp wt 0.8267855     0.8148396    2.369005
+## 10     6 2         wt qsec 0.8264161     0.8144448    2.429492
+## 6      7 2         disp wt 0.7809306     0.7658223    9.879096
+## 5      8 2         disp hp 0.7482402     0.7308774   15.233115
+## 7      9 2       disp qsec 0.7215598     0.7023571   19.602810
+## 9     10 2         hp qsec 0.6368769     0.6118339   33.472150
+## 14    11 3      hp wt qsec 0.8347678     0.8170643    3.061665
+## 11    12 3      disp hp wt 0.8268361     0.8082829    4.360702
+## 13    13 3    disp wt qsec 0.8264170     0.8078189    4.429343
+## 12    14 3    disp hp qsec 0.7541953     0.7278591   16.257790
+## 15    15 4 disp hp wt qsec 0.8351443     0.8107212    5.000000</code></pre>
 </div>
 <div id="best-subset-regression" class="section level3">
 <h3>Best Subset Regression</h3>
@@ -491,7 +491,7 @@ selection/elimination from the model specified.</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.884       RMSE                 184.276 
-## R-Squared                 0.781       MSE                38202.426 
+## R-Squared                 0.781       MSE                33957.712 
 ## Adj. R-Squared            0.758       Coef. Var             27.839 
 ## Pred R-Squared            0.700       AIC                  730.620 
 ## MAE                     137.656       SBC                  744.543 
@@ -546,7 +546,7 @@ selection/elimination from the model specified.</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.884       RMSE                 184.276 
-## R-Squared                 0.781       MSE                38202.426 
+## R-Squared                 0.781       MSE                33957.712 
 ## Adj. R-Squared            0.758       Coef. Var             27.839 
 ## Pred R-Squared            0.700       AIC                  730.620 
 ## MAE                     137.656       SBC                  744.543 
@@ -621,7 +621,7 @@ by name or position in the model specified.</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.866       RMSE                 196.724 
-## R-Squared                 0.750       MSE                44464.323 
+## R-Squared                 0.750       MSE                38700.429 
 ## Adj. R-Squared            0.718       Coef. Var             30.034 
 ## Pred R-Squared            0.649       AIC                  739.680 
 ## MAE                     146.418       SBC                  755.592 
@@ -679,7 +679,7 @@ by name or position in the model specified.</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.866       RMSE                 196.724 
-## R-Squared                 0.750       MSE                44464.323 
+## R-Squared                 0.750       MSE                38700.429 
 ## Adj. R-Squared            0.718       Coef. Var             30.034 
 ## Pred R-Squared            0.649       AIC                  739.680 
 ## MAE                     146.418       SBC                  755.592 
@@ -746,7 +746,7 @@ includes:</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.884       RMSE                 184.276 
-## R-Squared                 0.781       MSE                38202.426 
+## R-Squared                 0.781       MSE                33957.712 
 ## Adj. R-Squared            0.758       Coef. Var             27.839 
 ## Pred R-Squared            0.700       AIC                  730.620 
 ## MAE                     137.656       SBC                  744.543 
@@ -787,7 +787,7 @@ of the selection process along with the variable selected.</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># adjusted r-square </span></span>
 <span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">ols_step_forward_adj_r2</span>(model)</span>
 <span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="fu">plot</span>(k)</span></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
 </div>
 <div id="verbose-output" class="section level3">
 <h3>Verbose output</h3>
@@ -947,7 +947,7 @@ will display the following information at each step:</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.884       RMSE                 184.276 
-## R-Squared                 0.781       MSE                38202.426 
+## R-Squared                 0.781       MSE                33957.712 
 ## Adj. R-Squared            0.758       Coef. Var             27.839 
 ## Pred R-Squared            0.700       AIC                  730.620 
 ## MAE                     137.656       SBC                  744.543 
@@ -1032,7 +1032,7 @@ variables left.</p>
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.884       RMSE                 184.276 
-## R-Squared                 0.781       MSE                38202.426 
+## R-Squared                 0.781       MSE                33957.712 
 ## Adj. R-Squared            0.758       Coef. Var             27.839 
 ## Pred R-Squared            0.700       AIC                  730.620 
 ## MAE                     137.656       SBC                  744.543 
@@ -1098,7 +1098,7 @@ learn more about hierachichal selection <a href="https://www.stata.com/manuals/r
 ##                            Model Summary                            
 ## -------------------------------------------------------------------
 ## R                         0.878       RMSE                 188.249 
-## R-Squared                 0.771       MSE                39053.801 
+## R-Squared                 0.771       MSE                35437.709 
 ## Adj. R-Squared            0.753       Coef. Var             28.147 
 ## Pred R-Squared            0.695       AIC                  730.924 
 ## MAE                     140.619       SBC                  742.858 
